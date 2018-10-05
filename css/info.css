@@ -17,6 +17,27 @@ a{
 	width:30%;
 }
 
+#tagging{
+	padding:5px;
+	margin:5px;
+	width:100%;
+}
+
+.index-btn{
+	background-color: green;
+	width:100%;
+    border: none;
+    border-radius: 2rem;
+    color: white;
+    margin: 5px;
+    padding:0 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1.2rem;
+    line-height: 2rem;
+}
+
 #score{
 	display:flex;
 	flex-direction:row;
