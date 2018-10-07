@@ -67,6 +67,7 @@ function showContent(item){
         var txt = $("#tagging").val()?$("#tagging").val():"";
         if(txt.trim().length>0){
             item.tagging = txt;
+            item.task.status = "indexed";
             console.log("now start commit index.",item);
             index(item);
         }else{

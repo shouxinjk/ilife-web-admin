@@ -47,6 +47,7 @@ setInterval(function ()
     }
 }, 60);
 
+/*
 function loadItems(){//获取内容列表
     $.ajax({
         url:"https://data.shouxinjk.net/_db/sea/my/stuff",
@@ -58,6 +59,36 @@ function loadItems(){//获取内容列表
             }else{
                 for(var i = 0 ; i < data.length ; i++){
                     items.push(data[i]);
+                }
+                insertItem();
+            }
+        }
+    })            
+}
+//*/
+
+function loadItems(){//获取内容列表
+    var url = 'https://data.shouxinjk.net/_db/sea/_api/simple/by-example';
+    var q={
+        collection: "my_stuff", 
+        example: { 
+            tagging :null
+        } 
+    };    
+    $.ajax({
+        url:url,
+        type:"PUT",
+        data:JSON.stringify(q),
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Basic aWxpZmU6aWxpZmU="
+        },
+        success:function(data){
+            if(data.result.length==0){//如果没有内容，则显示提示文字
+                showNoMoreMsg();
+            }else{
+                for(var i = 0 ; i < data.result.length ; i++){
+                    items.push(data.result[i]);
                 }
                 insertItem();
             }
