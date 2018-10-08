@@ -135,7 +135,8 @@ function index(item){//记录日志
                 text: '更新成功',
                 showHideTransition: 'fade',
                 icon: 'success'
-            })
+            });
+            window.location.href="index.html";
         }
     })            
 }

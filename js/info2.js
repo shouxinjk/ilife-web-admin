@@ -39,7 +39,24 @@ function showContent(item){
     $("#jumplink").click(function(){jump(item);}); 
     $("#jumpbtn").click(function(){jump(item);});   
     $("#title").click(function(){jump(item);}); 
-
+    $("#indexbtn").click(function(){
+        var txt = $("#tagging").val()?$("#tagging").val():"";
+        if(txt.trim().length>0){
+            item.tagging = txt;
+            item.task.status = "indexed";
+            console.log("now start commit index.",item);
+            index(item);
+        }else{
+            $.toast({
+                heading: 'Error',
+                text: '标注不能为空',
+                showHideTransition: 'fade',
+                icon: 'error'
+            })
+        }
+    }); 
+    //手工标注
+    $("#tagging").val(item.tagging?item.tagging:"");     
     //标题与摘要
     $("#content").append("<div id='jumplink' class='title'>"+item.title+"</div>");//标题
     if(item.summary && item.summary.length>0)$("#content").append("<div class='summary'>"+item.summary+"</div>");//摘要
@@ -84,6 +101,35 @@ function showContent(item){
     });
     //*/
     //广告
+}
+
+
+//提交索引
+function index(item){//记录日志
+    var data = {
+        records:[{
+            value:item
+        }]
+    };
+    $.ajax({
+        url:"http://kafka-rest.shouxinjk.net/topics/stuff",
+        type:"post",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/vnd.kafka.json.v2+json",
+            "Accept":"application/vnd.kafka.v2+json"
+        },
+        success:function(result){
+            //fn(result);
+            $.toast({
+                heading: 'Success',
+                text: '更新成功',
+                showHideTransition: 'fade',
+                icon: 'success'
+            });
+            window.location.href="index.html";
+        }
+    })            
 }
 
 //点击跳转到原始链接
