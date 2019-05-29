@@ -64,32 +64,40 @@ function showContent(item){
     $("#jumpbtn").click(function(){jump(item);});   
     $("#title").click(function(){jump(item);}); 
     $("#indexbtn").click(function(){
-        var txt = $("#tagging").val()?$("#tagging").val():"";
-        if(txt.trim().length>0){
-            item.tagging = txt;
+        var tagging = $("#tagging").val()?$("#tagging").val():"";
+        var web2link = $("#web2link").val()?$("#web2link").val():"";
+        var wap2link = $("#wap2link").val()?$("#wap2link").val():"";
+        if(tagging.trim().length>0 && web2link.trim().length>0 && wap2link.trim().length>0){
+            item.tagging = tagging;
+            item.link.web2 = web2link;
+            item.link.wap2 = wap2link;
             item.task.status = "indexed";
             console.log("now start commit index.",item);
             index(item);
         }else{
             $.toast({
                 heading: 'Error',
-                text: '标注不能为空',
+                text: '标注和推广链接不能为空',
                 showHideTransition: 'fade',
                 icon: 'error'
             })
         }
     }); 
     //手工标注
-    $("#tagging").val(item.tagging?item.tagging:"");   
+    $("#tagging").val(item.tagging?item.tagging:"");  
+    //pc推广链接
+    $("#web2link").val(item.link.web2?item.link.web2:item.link.web);  
+    //移动端推广链接 
     //标题
     $("#title").html(item.title);
+    $("#wap2link").val(item.link.wap2?item.link.wap2:item.link.wap);  
     //评分
     if(item.rank.score){
         $("#score .comment").append("<div class='label'>评价</div><div class='rank'>"+item.rank.score+"/<span class='base'>"+item.rank.base+"</span></div>");
     }else{
         $("#score .comment").append("<div class='label'>评价</div><div class='rank'><span class='empty'>暂无评分</span></div>");
     }
-    $("#score .price").append("<div class='label'>价格</div><div class='price-sale'><span class='price-bid'>"+(item.price.bid?item.price.bid:"")+"</span>"+item.price.sale+"</div>");
+    $("#score .price").append("<div class='label'>"+(item.price.currency?item.price.currency:"价格")+"</div><div class='price-sale'><span class='price-bid'>"+(item.price.bid?item.price.bid:"")+"</span>"+item.price.sale+"</div>");
     //$("#score .price").append("<div class='label'>价格</div><div class='price-sale'>"+item.price.sale+"</div>");
     $("#score .score").append("<div class='label'>推荐度</div><div class='match'>"+(item.rank.match*100)+"%</div>");
     //推荐者列表

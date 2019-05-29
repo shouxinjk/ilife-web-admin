@@ -43,8 +43,22 @@
         </div>
         <div id="meta">  
             <div class="tagging">
-                <textarea id="tagging" rows="5"></textarea>
-                <button id="indexbtn" type="button" class="index-btn">&nbsp;&nbsp;提交/更新索引&nbsp;&nbsp;</button>
+                <div>
+                    <label for="tagging">标签/推荐语</label>
+                    <textarea id="tagging" rows="5"></textarea>
+                </div>               
+                <div>
+                    <label for="web2link">PC端推广链接（请拷贝后重新生成）</label>
+                    <input id="web2link" placeholder=""/><br/>
+                </div>
+                <div>
+                    <label for="wap2link">移动端推广链接（请拷贝后重新生成）</label>
+                    <input id="wap2link" placeholder=""/>
+                </div>
+                <div>
+                    <button id="cancelbtn" type="button" class="cancel-btn">&nbsp;删除&nbsp;</button>
+                    <button id="indexbtn" type="button" class="index-btn">&nbsp;提交/更新索引&nbsp;</button>
+                </div>
             </div>
             <div id="title" class="title side"></div>  
             <div id="tags" class="side"></div>                  

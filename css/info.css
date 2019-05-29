@@ -23,9 +23,36 @@ a{
 	width:100%;
 }
 
+.tagging label{
+	margin:5px 10px;
+}
+
+.tagging input{
+	padding:5px;
+	margin:5px;	
+	width:100%;
+	line-height: 24px;
+	border:1px solid silver;
+}
+
 .index-btn{
 	background-color: green;
-	width:100%;
+	width:60%;
+    border: none;
+    border-radius: 2rem;
+    color: white;
+    margin: 5px;
+    padding:0 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 1.2rem;
+    line-height: 2rem;
+}
+
+.cancel-btn{
+	background-color: orange;
+	width:30%;
     border: none;
     border-radius: 2rem;
     color: white;
