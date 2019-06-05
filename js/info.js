@@ -170,7 +170,7 @@ function showContent(item){
     $("#categoryTree").jstree({
           "core" : {
             "data" : {
-                "url":"http://localhost:8080/iLife/a/mod/itemCategory/categoriesAndMeasures",
+                "url":"http://www.shouxinjk.net/ilife/a/mod/itemCategory/categoriesAndMeasures",
                 "data":function(node){
                   return { parentId : node.id==='#'?'1':node.id};
                 },
@@ -229,7 +229,7 @@ function showContent(item){
 function loadProps(categoryId){
     //根据categoryId获取所有measure清单，字段包括name、property
     $.ajax({
-        url:"http://localhost:8080/iLife/a/mod/measure/measures?category="+categoryId,
+        url:"http://www.shouxinjk.net/ilife/a/mod/measure/measures?category="+categoryId,
         type:"get",
         data:{},
         success:function(items){
