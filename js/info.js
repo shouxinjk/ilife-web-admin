@@ -24,7 +24,7 @@ $(document).ready(function ()
     //加载导航和内容
     loadCategories(category);
     loadItem(id);   
-    loadHosts(id);
+    //loadHosts(id);//管理页面不需要加载关注列表
 
 });
 
