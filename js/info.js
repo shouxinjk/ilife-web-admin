@@ -147,7 +147,7 @@ function showContent(item){
     //属性标注
     $("#changePropertyBtn").click(//提交属性值
         function(){
-            console.log("提交属性值："+JSON.stringify(nodes));
+            console.log("待提交属性值：",nodes);
         }
     );     
     //评分
@@ -251,7 +251,11 @@ function loadProps(categoryId){
                         _key = key;
                         break;
                     }  
-                    if(_key===property){//如果存在对应property
+                    if(_key===property){//如果存在对应property：这是理想情况，多数情况下都只能通过name匹配
+                        value = prop[_key];
+                        props.splice(j, 1);//删除该元素
+                        break;
+                    }else if(_key===name){//如果匹配上name 也进行同样的处理
                         value = prop[_key];
                         props.splice(j, 1);//删除该元素
                         break;
