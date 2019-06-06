@@ -110,6 +110,7 @@ function showContent(item){
             item.link.web2 = web2link;
             item.link.wap2 = wap2link;
             item.task.status = "indexed";
+            item.status = "active";
             console.log("now start commit index.",item);
             index(item);
         }else{
