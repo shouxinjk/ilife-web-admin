@@ -105,7 +105,7 @@ function showContent(item){
         var tagging = $("#tagging").val()?$("#tagging").val():"";
         var web2link = $("#web2link").val()?$("#web2link").val():"";
         var wap2link = $("#wap2link").val()?$("#wap2link").val():"";
-        if(tagging.trim().length>0 && web2link.trim().length>0 && wap2link.trim().length>0){
+        if(tagging.trim().length>0 && ((web2link.trim().length>0 && wap2link.trim().length>0) || item.link.qrcode)) {
             item.tagging = tagging;
             item.link.web2 = web2link;
             item.link.wap2 = wap2link;
