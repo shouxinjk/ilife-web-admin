@@ -159,6 +159,12 @@ function showContent(item){
     $("#score .price").append("<div class='label'>"+(item.price.currency?item.price.currency:"价格")+"</div><div class='price-sale'><span class='price-bid'>"+(item.price.bid?item.price.bid:"")+"</span>"+item.price.sale+"</div>");
     //$("#score .price").append("<div class='label'>价格</div><div class='price-sale'>"+item.price.sale+"</div>");
     $("#score .score").append("<div class='label'>推荐度</div><div class='match'>"+(item.rank.match*100)+"%</div>");
+    //二维码：使用海报图，将其中二维码进行裁剪
+    if(item.link.qrcode){
+        $("#qrcodeImg").attr("src",item.link.qrcode);
+        $('#qrcodeImg').addClass('qrcode-'+item.source);
+        $("#qrcodeImgDiv").css('visibility', 'visible');
+    }
     //推荐者列表
     //标签云
     if(item.distributor && item.distributor.name){//来源作为标签

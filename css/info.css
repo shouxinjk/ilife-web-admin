@@ -23,6 +23,18 @@ a{
 	width:100%;
 }
 
+#qrcodeImgDiv{
+	visibility:hidden;
+}
+
+.qrcode-lianlianly{
+	position:absolute;
+	clip:rect(1196px 138px 1324px 10px);
+	overflow: hidden;
+	margin-top:-1190px;
+	margin-left:-10px; 
+}
+
 .tagging label{
 	margin:5px 10px;
 }
