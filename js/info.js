@@ -348,10 +348,17 @@ function jump(item){//支持点击事件
     //console.log(item.id,item.url);
     logstash(item,"buy",function(){
         var target = item.url;
-        if(item.link){
-            target = item.link.web2?item.link.web2:item.link.web;
+        if(item.link.web2){
+            target = item.link.web2;
+            window.location.href = target;
+        }else if(item.link.web){
+            target = item.link.web;
+            window.location.href = target;
+        }else{
+            //there is no url link to jump
+            //it is a QRCODE
+            $("#jumpbtn").text("扫码购买");
         }
-        window.location.href = target;
     });
 }
 
