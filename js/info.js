@@ -162,8 +162,10 @@ function showContent(item){
     //二维码：使用海报图，将其中二维码进行裁剪
     if(item.link.qrcode){
         $("#qrcodeImg").attr("src",item.link.qrcode);
-        $('#qrcodeImg').addClass('qrcode-'+item.source);
+        $('#qrcodeImg').addClass('qrcode-'+item.source);//应用对应不同source的二维码裁剪属性
+        $('#qrcodeImgDiv').addClass('qrcode-'+item.source+'-div');//应用对应不同source的二维码裁剪属性
         $("#qrcodeImgDiv").css('visibility', 'visible');
+        $("#jumpbtn").text('扫码查看');
     }
     //推荐者列表
     //标签云
@@ -441,3 +443,4 @@ function loadCategories(currentCategory){
         }
     })    
 }
+
