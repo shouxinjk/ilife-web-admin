@@ -24,6 +24,11 @@ $(document).ready(function ()
         window.location.href=window.location.href.replace(/info.html/g,"info2.html");
     }
 
+    //加载地图
+    map = new BMap.Map("allmap");
+    var point = new BMap.Point(104.069376,30.574828);
+    map.centerAndZoom(point,12); 
+
     //加载导航和内容
     loadCategories(category);
     loadItem(id);   
@@ -31,6 +36,8 @@ $(document).ready(function ()
 
 
 });
+
+var map = null;
 
 var galleryWidth = 673;
 var galleryHeight = 378;
@@ -106,6 +113,7 @@ function showContent(item){
             item.category = itemCategoryNew.category;
         }
         //检查并更新经纬度
+        //item.address = $("#address").val()?$("#address").val():"珠穆朗玛峰";
         var lon = $("#lon").val()?$("#lon").val():"86.9250";
         var lat = $("#lat").val()?$("#lat").val():"27.9881";
         item.location = {
@@ -156,6 +164,24 @@ function showContent(item){
             loadProps(itemCategoryNew.categoryId);
         }
     ); 
+    //地址
+    $("#changeAddressBtn").click(//修改地址
+        function(){
+            var addr = $("#address").val();
+            if(addr==null || addr.trim().length==0){//地址不能为空
+                $.toast({
+                    heading: 'Error',
+                    text: '地址为空，不能获取坐标信息',
+                    showHideTransition: 'fade',
+                    icon: 'error'
+                });
+            }else{            
+                item.address = addr;//更改显示内容；
+                //解析地址得到经纬度
+                getLocationByAddress(addr);
+            }
+        }
+    );     
     //属性标注
     $("#changePropertyBtn").click(//提交属性值
         function(){
@@ -348,11 +374,7 @@ function getLocationByAddress(address){
         });
         return;
     }
-    $("#address").val(address);
-    // 百度地图API功能
-    var map = new BMap.Map("allmap");
-    var point = new BMap.Point(104.069376,30.574828);
-    map.centerAndZoom(point,12);    
+   
     // 创建地址解析器实例
     var myGeo = new BMap.Geocoder();
     // 将地址解析结果显示在地图上,并调整地图视野
@@ -396,7 +418,7 @@ function index(item){//记录日志
                 showHideTransition: 'fade',
                 icon: 'success'
             });
-            //window.location.href="index.html";
+            window.location.href="index.html";
         }
     })            
 }
@@ -459,6 +481,7 @@ function loadItem(key){//获取内容列表
                 loadProps(data.categoryId);
             }
             if(data.address && data.address.trim().length>0){
+                $("#address").val(data.address);
                 getLocationByAddress(data.address);
             }
         }
