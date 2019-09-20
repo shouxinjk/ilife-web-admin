@@ -1,6 +1,8 @@
 // 文档加载完毕后执行
 $(document).ready(function ()
 {
+    //百度地图
+    window.BMap_loadScriptTime = (new Date).getTime();
     //根据屏幕大小计算字体大小
     const oHtml = document.getElementsByTagName('html')[0]
     const width = oHtml.clientWidth;
@@ -21,10 +23,12 @@ $(document).ready(function ()
     if(width<800){
         window.location.href=window.location.href.replace(/info.html/g,"info2.html");
     }
+
     //加载导航和内容
     loadCategories(category);
     loadItem(id);   
     //loadHosts(id);//管理页面不需要加载关注列表
+
 
 });
 
@@ -101,6 +105,14 @@ function showContent(item){
             item.categoryId = itemCategoryNew.categoryId;
             item.category = itemCategoryNew.category;
         }
+        //检查并更新经纬度
+        var lon = $("#lon").val()?$("#lon").val():"86.9250";
+        var lat = $("#lat").val()?$("#lat").val():"27.9881";
+        item.location = {
+            lat:parseFloat(lat),
+            lon:parseFloat(lon)
+        };
+
         //标签和链接
         var tagging = $("#tagging").val()?$("#tagging").val():"";
         var web2link = $("#web2link").val()?$("#web2link").val():"";
@@ -323,6 +335,44 @@ function loadProps(categoryId){
 
 }
 
+/**
+根据地址解析得到经纬度
+*/
+function getLocationByAddress(address){
+    if(address==null || address.trim().length==0){//地址不能为空
+        $.toast({
+            heading: 'Error',
+            text: '地址为空，不能获取坐标信息',
+            showHideTransition: 'fade',
+            icon: 'error'
+        });
+        return;
+    }
+    $("#address").val(address);
+    // 百度地图API功能
+    var map = new BMap.Map("allmap");
+    var point = new BMap.Point(104.069376,30.574828);
+    map.centerAndZoom(point,12);    
+    // 创建地址解析器实例
+    var myGeo = new BMap.Geocoder();
+    // 将地址解析结果显示在地图上,并调整地图视野
+    myGeo.getPoint(address, function(point){
+        if (point) {
+            $("#lat").val(point.lat);
+            $("#lon").val(point.lng);
+            map.centerAndZoom(point, 16);
+            map.addOverlay(new BMap.Marker(point));
+        }else{
+            $.toast({
+                heading: 'Error',
+                text: '不能获取与地址相对应的坐标',
+                showHideTransition: 'fade',
+                icon: 'error'
+            });
+        }
+    }, "成都市");
+}
+
 //提交索引
 function index(item){//记录日志
     var data = {
@@ -346,7 +396,7 @@ function index(item){//记录日志
                 showHideTransition: 'fade',
                 icon: 'success'
             });
-            window.location.href="index.html";
+            //window.location.href="index.html";
         }
     })            
 }
@@ -407,6 +457,9 @@ function loadItem(key){//获取内容列表
                 $("#category").val((data.category?data.category:"-")+":"+(data.categoryId?data.categoryId:"-"));//更改显示内容；
                 //加载当前Property列表
                 loadProps(data.categoryId);
+            }
+            if(data.address && data.address.trim().length>0){
+                getLocationByAddress(data.address);
             }
         }
     })            

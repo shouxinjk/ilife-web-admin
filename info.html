@@ -69,7 +69,20 @@
                 <div id="propsWrapper">
                		<label>详细参数</label><a href="#" id="changePropertyBtn">标注检查</a>
                		<div id="propsList"></div>
-               	</div>              	
+               	</div> 
+               	<div>
+               		<label>位置</label> 
+               		<input id="address" value="" />
+               	</div>                	
+               	<div>
+               		<label>经度</label> 
+               		<input id="lon" value="86.9250" />
+               	</div> 
+               	<div>
+               		<label>纬度</label> 
+               		<input id="lat" value="27.9881" />
+               	</div>                	               	    
+            	<div id="allmap"></div>                 	         	
                 <div>
                     <button id="cancelbtn" type="button" class="cancel-btn">&nbsp;删除&nbsp;</button>
                     <button id="indexbtn" type="button" class="index-btn">&nbsp;提交/更新索引&nbsp;</button>
@@ -81,7 +94,7 @@
                 <div class="comment"></div>
                 <div class="price"></div>
                 <div class="score"></div>
-            </div>      
+            </div>    
             <div class="link">
                 <button id="jumpbtn" type="button" class="buy-btn">&nbsp;&nbsp;&nbsp;&nbsp;去 看 看 &gt;&nbsp;&nbsp;&nbsp;&nbsp;    </button>
             </div>  
@@ -112,5 +125,6 @@
 <script type="text/javascript" src="ext/jstree/jstree.min.js"></script>
 <script type="text/javascript" src="ext/jsgrid-1.5.3/jsgrid.min.js"></script>
 <script type="text/javascript" src="js/util.js?v=2.0"></script>
-<script type="text/javascript" src="js/info.js?v=1.1"></script>
+<script type="text/javascript" src="js/info.js?v=1.2"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=XwNTgTOf5mYaZYhQ0OiIb6GmOHsSZWul&services=&t=20190622163250"></script>
 </html>
