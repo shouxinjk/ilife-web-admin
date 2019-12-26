@@ -1,4 +1,6 @@
 
+
+
 function getQuery() {
     //取得查询字符串并去掉开头的问号
     var qs = location.search.length > 0 ? location.search.substring(1):"";
@@ -50,3 +52,5 @@ function logstash(item,action,fn){//记录日志
         }
     })            
 }
+
+

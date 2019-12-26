@@ -112,7 +112,7 @@ function insertItem(){
     //console.log("orgwidth:"+orgWidth+"orgHeight:"+orgHeight+"width:"+imgWidth+"height:"+imgHeight);
     var image = "<img src='"+item.images[0]+"' width='"+imgWidth+"' height='"+imgHeight+"'/>"
     //var title = "<span class='title'><a href='info.html?category="+category+"&id="+item._key+"'>"+item.title+"</a></span>"
-    var title = "<div class='title'>"+item.title+"</div>"
+    var title = "<div class='title'>"+item.distributor.name+" "+item.title+"</div>"
     $("#waterfall").append("<li><div data='"+item._key+"'>" + image +title+ "</div></li>");
     num++;
 
