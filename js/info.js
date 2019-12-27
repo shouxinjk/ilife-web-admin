@@ -19,6 +19,7 @@ $(document).ready(function ()
     var args = getQuery();
     var category = args["category"]; //当前目录
     var id = args["id"];//当前内容
+    showAllItems = args["showAllItems"]?true:false;//传入该参数表示需要index页面显示全部内容
     //判断屏幕大小，如果是小屏则跳转
     if(width<800){
         window.location.href=window.location.href.replace(/info.html/g,"info2.html");
@@ -37,6 +38,7 @@ $(document).ready(function ()
 
 });
 
+var showAllItems = false;
 var map = null;
 
 var galleryWidth = 673;
@@ -418,7 +420,7 @@ function index(item){//记录日志
                 showHideTransition: 'fade',
                 icon: 'success'
             });
-            window.location.href="index.html";
+            window.location.href="index.html"+(showAllItems?"?showAllItems=true":"");
         }
     })            
 }

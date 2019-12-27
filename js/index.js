@@ -19,6 +19,13 @@ $(document).ready(function ()
     });
     category = args["category"]?args["category"]:0; //如果是跳转，需要获取当前目录
     loadCategories(category);
+
+    //设置提示信息
+    showAllItems = args["showAllItems"]?true:false;//传入该参数则显示全部内容
+    if(showAllItems){
+        $("#tipText").text("当前显示全部商品，请关闭自动入库功能");
+        $('#tipText').css('color', 'red');
+    }
 });
 
 var columnWidth = 300;//默认宽度300px
@@ -33,6 +40,8 @@ var category  = 0; //当前目录
 
 var hasMore = false;
 var cursorId = null;
+
+var showAllItems = false;
 
 setInterval(function ()
 {
@@ -81,7 +90,10 @@ function loadItems(){//获取内容列表
         query: "For doc in my_stuff filter doc.tagging==null and (doc.link.web2!=null or doc.link.qrcode!=null) sort doc.task.timestamp desc return doc", 
         count:  true,
         batchSize: 10//默认显示10条
-    };     
+    };    
+    if (showAllItems) {//如果显示所有则提示全部内容
+        q.query = "For doc in my_stuff filter doc.tagging==null sort doc.task.timestamp desc return doc";
+    }     
     $.ajax({
         url:url,
         type:"POST",
@@ -168,7 +180,7 @@ function insertItem(){
     //注册事件
     $("div[data='"+item._key+"']").click(function(){
         //跳转到详情页
-        window.location.href = "info.html?category="+category+"&id="+item._key;
+        window.location.href = "info.html?category="+category+"&id="+item._key+(showAllItems?"&showAllItems=true":"");
     });
 
     // 表示加载结束
