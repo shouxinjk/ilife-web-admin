@@ -31,6 +31,9 @@ var num = 1;//需要加载的内容下标
 var items = [];//所有内容列表
 var category  = 0; //当前目录
 
+var hasMore = false;
+var cursorId = null;
+
 setInterval(function ()
 {
     if ($(window).scrollTop() >= $(document).height() - $(window).height() - dist && !loading)
@@ -40,7 +43,11 @@ setInterval(function ()
 
         // 加载内容
         if(items.length < num){//如果内容未获取到本地则继续获取
-            loadItems();
+            if(hasMore && cursorId!=null){//有游标则直接从游标中获取
+                loadMore();
+            }else{//否则发起新查询
+                loadItems();
+            }
         }else{//否则使用本地内容填充
             insertItem();
         }
@@ -68,22 +75,30 @@ function loadItems(){//获取内容列表
 //*/
 
 function loadItems(){//获取内容列表
-    var url = 'https://data.shouxinjk.net/_db/sea/_api/simple/by-example';
+    //query by aql: 选取tagging为空，并且已经有cps链接或qrcode的条目
+    var url = 'https://data.shouxinjk.net/_db/sea/_api/cursor';
     var q={
-        collection: "my_stuff", 
-        example: { 
-            tagging :null
-        } 
-    };    
+        query: "For doc in my_stuff filter doc.tagging==null and (doc.link.web2!=null or doc.link.qrcode!=null) sort doc.task.timestamp desc return doc", 
+        count:  true,
+        batchSize: 10//默认显示10条
+    };     
     $.ajax({
         url:url,
-        type:"PUT",
+        type:"POST",
         data:JSON.stringify(q),
         headers:{
             "Content-Type":"application/json",
             "Authorization":"Basic aWxpZmU6aWxpZmU="
         },
         success:function(data){
+            //记录游标信息
+            hasMore = data.hasMore;
+            if(data.hasMore){
+                cursorId = data.id;
+            }else{
+                cursorId = null;
+            }
+            //处理数据列表
             if(data.result.length==0){//如果没有内容，则显示提示文字
                 showNoMoreMsg();
             }else{
@@ -94,6 +109,40 @@ function loadItems(){//获取内容列表
             }
         }
     })            
+}
+
+//从cursor中获取数据，用于分页显示
+function loadMore(){
+    //query by aql: 选取tagging为空，并且已经有cps链接或qrcode的条目
+    var url = 'https://data.shouxinjk.net/_db/sea/_api/cursor/'+cursorId;
+    var q={};     
+    $.ajax({
+        url:url,
+        type:"PUT",
+        data:JSON.stringify(q),
+        headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Basic aWxpZmU6aWxpZmU="
+        },
+        success:function(data){
+            //记录游标信息
+            hasMore = data.hasMore;
+            if(data.hasMore){
+                cursorId = data.id;
+            }else{
+                cursorId = null;
+            }
+            //处理数据列表            
+            if(data.result.length==0){//如果没有内容，则显示提示文字
+                showNoMoreMsg();
+            }else{
+                for(var i = 0 ; i < data.result.length ; i++){
+                    items.push(data.result[i]);
+                }
+                insertItem();
+            }
+        }
+    })      
 }
 
 //将item显示到页面
