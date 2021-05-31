@@ -1,0 +1,40 @@
+
+div.title{
+    font-weight:bold;
+    font-size:1.2rem;
+    line-height: 1.5rem;
+}
+
+#tipText{
+	font-size:12px;
+}
+
+h4 {
+	font-weight: 2rem;
+}
+
+.container {
+	display:flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	width:100%;
+	height:600px;
+}
+
+.category-widget-wrapper{
+	width:45%;
+	display: inline;
+}
+
+.category-widget-title{
+	font-size: 1.8rem;
+	font-weight: bold;
+}
+
+.category-widget {
+	width:90%;
+	height:600px;
+	float:left;
+}
+
