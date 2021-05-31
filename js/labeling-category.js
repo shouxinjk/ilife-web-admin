@@ -47,14 +47,15 @@ var treeTarget = null;
 var sourceArray = ["pdd","jd","tmall","taobao","kaola","fliggy","ctrip","gome","suning","dangdang","dhc","amazon"];//source list
 var sourceRootArray = ["0","0","0","0","0","0","0","0","0","0","0","0"];//root node of different sources
 
-//var sourceTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/standard-categories";
-//var targetTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-categories";
-//var thirdpartyPlatforms = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-platforms";
-
+var sourceTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/standard-categories";
+var targetTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-categories";
+var thirdpartyPlatforms = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-platforms";
+//**/
+/**
 var sourceTreeDataUrl = "http://localhost:8080/iLife/a/mod/itemCategory/standard-categories";
 var targetTreeDataUrl = "http://localhost:8080/iLife/a/mod/itemCategory/third-party-categories";
 var thirdpartyPlatforms = "http://localhost:8080/iLife/a/mod/itemCategory/third-party-platforms";
-
+//**/
 //加载标注分类树：标准分类树的叶子节点作为draggable节点
 function loadSourceTree(){
     //获取标准分类树，默认获取第一级分类
@@ -84,8 +85,8 @@ function loadTargetTree(source){
     treeTarget.events.on("AfterDrop", function(id, e){
         console.log("item dropped.",id);
         //TODO: connect standard category to 3party category here.
-        $("li[dhx_id='"+id.start+"'] .dhx_tree-list-item__text").css("color", "#ff0000");
-        $("li[dhx_id='"+id.target+"'] .dhx_tree-list-item__text:first").css("color", "#00ff00");
+        //$("li[dhx_id='"+id.start+"'] .dhx_tree-list-item__text").css("color", "#ff0000");
+        //$("li[dhx_id='"+id.target+"'] .dhx_tree-list-item__text:first").css("color", "#00ff00");
     });      
 
     //注册事件：点击展开整棵树
