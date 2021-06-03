@@ -45,8 +45,8 @@ var treeSource = null;
 var treeTarget = null;
 
 var sourceArray = ["pdd","jd","tmall","taobao","kaola","fliggy","ctrip","gome","suning","dangdang","dhc","amazon"];//source list
-var sourceRootArray = ["0","0","0","0","0","0","0","0","0","0","0","0"];//root node of different sources
 
+//**
 var sourceTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/standard-categories";
 var targetTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-categories";
 var thirdpartyPlatforms = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-platforms";
@@ -117,7 +117,6 @@ function loadPlatforms(currentPlatform){
         }
     })    
 }
-
 
 
 
