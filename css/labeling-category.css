@@ -27,6 +27,15 @@ h4 {
 	display: inline;
 }
 
+.category-widget-wrapper-narrow{
+	width:22%;
+	display: inline;
+}
+.category-widget-wrapper-wide{
+	width:75%;
+	display: inline;
+}
+
 .category-widget-title{
 	font-size: 1.8rem;
 	font-weight: bold;
