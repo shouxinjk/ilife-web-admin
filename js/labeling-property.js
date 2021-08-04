@@ -20,6 +20,7 @@ $(document).ready(function ()
     //初始化两颗目录树
     treeSource = new dhx.Tree("tree-source", {
         dragMode: "both",//支持反向从第三方平台建立标准属性
+        dragCopy: true,
         autoload: sourceTreeDataUrl
     });
 
@@ -83,10 +84,24 @@ function loadTargetTree(source){
         treeTarget.toggle(id);
     });    
     treeTarget.events.on("AfterDrop", function(id, e){
-        console.log("item dropped.",id);
-        //TODO: connect standard category to 3party category here.
-        //$("li[dhx_id='"+id.start+"'] .dhx_tree-list-item__text").css("color", "#ff0000");
-        //$("li[dhx_id='"+id.target+"'] .dhx_tree-list-item__text:first").css("color", "#00ff00");
+        console.log("item dropped.",id,treeSource.data.getItem(id.start),treeTarget.data.getItem(id.target));
+        //需要判断，仅在source与target均为属性节点才执行更新
+        if( id.start.indexOf("prop-")>=0 && id.target.indexOf("prop-")>=0 ){
+            //将标注信息提交到服务器，对第三方平台属性添加mappingId、mappingName信息
+            var itemKey = treeTarget.data.getItem(id.target).itemKey;
+            var standardPropertyName = treeSource.data.getItem(id.start).value;
+            var platformPropertyName = treeTarget.data.getItem(id.target).value;
+            mappingProperty(itemKey,id.target,platformPropertyName,id.start,standardPropertyName);
+        }else{//提示需要针对属性进行标注
+            //由于已经完成拖拽，需要删除掉
+            treeTarget.data.remove(id.start);//删除目标树下新增节点：根据源节点ID操作 
+             $.toast({
+                heading: 'Error',
+                text: '只能在属性间建立映射，请重新选择。',
+                showHideTransition: 'fade',
+                icon: 'error'
+            });           
+        }
     });      
 
     //注册事件：点击展开整棵树
@@ -119,4 +134,32 @@ function loadPlatforms(currentPlatform){
 }
 
 
+//建立 第三方属性 与标准属性映射。直接将附加数据存储到arangodb
+function mappingProperty(itemKey,platformPropertyId,platformPropertyName,standardPropertyId,standardPropertyName){
+    var data = {
+        records:[{
+            value:{
+                _key:itemKey,
+                mappingId:standardPropertyId.replace(/prop\-/g,""),
+                mappingName:standardPropertyName
+            }
+        }]
+    };
+    $.ajax({
+        url:"http://kafka-rest.shouxinjk.net/topics/property",
+        type:"post",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/vnd.kafka.json.v2+json",
+            "Accept":"application/vnd.kafka.v2+json"
+        },
+        success:function(result){
+            //更新界面显示
+            console.log("try to update tree:",platformPropertyId,platformPropertyName,standardPropertyId,standardPropertyName);
+            //treeSource.data.update(standardCategoryId, { value: platformCategoryName+"-->"+standardCategoryName});//修改源目录下的节点显示内容
+            treeTarget.data.update(platformPropertyId, { value: platformPropertyName+"-->"+ standardPropertyName });//修改目标目录下的节点显示内容
+            treeTarget.data.remove(standardPropertyId);//删除目标树下新增节点：根据源节点ID操作          
+        }
+    })            
+}
 
