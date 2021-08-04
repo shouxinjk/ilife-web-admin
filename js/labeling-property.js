@@ -157,7 +157,8 @@ function mappingProperty(itemKey,platformPropertyId,platformPropertyName,standar
             //更新界面显示
             console.log("try to update tree:",platformPropertyId,platformPropertyName,standardPropertyId,standardPropertyName);
             //treeSource.data.update(standardCategoryId, { value: platformCategoryName+"-->"+standardCategoryName});//修改源目录下的节点显示内容
-            treeTarget.data.update(platformPropertyId, { value: platformPropertyName+"-->"+ standardPropertyName });//修改目标目录下的节点显示内容
+            var orgPlatformPropertyName = platformPropertyName.split("-->")[0];//对于修改的情况，需要剔除原有映射
+            treeTarget.data.update(platformPropertyId, { value: orgPlatformPropertyName+"-->"+ standardPropertyName });//修改目标目录下的节点显示内容
             treeTarget.data.remove(standardPropertyId);//删除目标树下新增节点：根据源节点ID操作          
         }
     })            
