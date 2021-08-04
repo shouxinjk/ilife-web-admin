@@ -20,12 +20,13 @@ $(document).ready(function ()
     //初始化两颗目录树
     treeSource = new dhx.Tree("tree-source", {
         dragMode: "source",//仅支持拖出
+        dragCopy: true,
         autoload: sourceTreeDataUrl
     });
 
     treeTarget = new dhx.Tree("tree-target", {
         dragMode: "both",//可能会放置错误，允许调整
-        dropBehaviour: "child",
+        dropBehaviour: "complex",
         autoload: targetTreeDataUrl+"/"+source //通过pathvariable传递source参数
     });
 
@@ -81,12 +82,14 @@ function loadTargetTree(source){
     treeTarget.events.on("ItemClick", function(id, e){
         console.log("The item with the id "+ id +" was clicked.");
         treeTarget.toggle(id);
-    });    
+    });        
     treeTarget.events.on("AfterDrop", function(id, e){
-        console.log("item dropped.",id);
-        //TODO: connect standard category to 3party category here.
-        //$("li[dhx_id='"+id.start+"'] .dhx_tree-list-item__text").css("color", "#ff0000");
-        //$("li[dhx_id='"+id.target+"'] .dhx_tree-list-item__text:first").css("color", "#00ff00");
+        console.log("item dropped.",id,treeSource.data.getItem(id.start),treeTarget.data.getItem(id.target));
+        //将标注信息提交到服务器，在第三方平台目录树下建立标准目录引用信息，包括标准目录id,fullpath,name,fullname 后续显示中将直接展示
+        var itemKey = treeTarget.data.getItem(id.target).itemKey;
+        var standardCategoryName = treeSource.data.getItem(id.start).value;
+        var platformCategoryName = treeTarget.data.getItem(id.target).value;
+        mappingCategory(itemKey,id.target,platformCategoryName,id.start,standardCategoryName);
     });      
 
     //注册事件：点击展开整棵树
@@ -118,5 +121,34 @@ function loadPlatforms(currentPlatform){
     })    
 }
 
+
+//建立 第三方类目 与标准类目映射。直接将附加数据存储到arangodb
+function mappingCategory(itemKey,platformCategoryId,platformCategoryName,standardCategoryId,standardCategoryName){//提交映射第三方电商平台到标准类目
+    var data = {
+        records:[{
+            value:{
+                _key:itemKey,
+                mappingId:standardCategoryId,
+                mappingName:standardCategoryName
+            }
+        }]
+    };
+    $.ajax({
+        url:"http://kafka-rest.shouxinjk.net/topics/category",
+        type:"post",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/vnd.kafka.json.v2+json",
+            "Accept":"application/vnd.kafka.v2+json"
+        },
+        success:function(result){
+            //更新界面显示
+            console.log("try to update tree:",platformCategoryId,platformCategoryName,standardCategoryId,standardCategoryName);
+            //treeSource.data.update(standardCategoryId, { value: platformCategoryName+"-->"+standardCategoryName});//修改源目录下的节点显示内容
+            treeTarget.data.update(platformCategoryId, { value: platformCategoryName+"-->"+ standardCategoryName });//修改目标目录下的节点显示内容
+            treeTarget.data.remove(standardCategoryId);//删除目标树下新增节点：根据源节点ID操作          
+        }
+    })            
+}
 
 
