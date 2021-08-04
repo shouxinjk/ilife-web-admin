@@ -145,7 +145,8 @@ function mappingCategory(itemKey,platformCategoryId,platformCategoryName,standar
             //更新界面显示
             console.log("try to update tree:",platformCategoryId,platformCategoryName,standardCategoryId,standardCategoryName);
             //treeSource.data.update(standardCategoryId, { value: platformCategoryName+"-->"+standardCategoryName});//修改源目录下的节点显示内容
-            treeTarget.data.update(platformCategoryId, { value: platformCategoryName+"-->"+ standardCategoryName });//修改目标目录下的节点显示内容
+            var orgPlatformCategoryName = platformCategoryName.split("-->")[0];//对于修改的情况，需要剔除原有映射
+            treeTarget.data.update(platformCategoryId, { value: orgPlatformCategoryName+"-->"+ standardCategoryName });//修改目标目录下的节点显示内容
             treeTarget.data.remove(standardCategoryId);//删除目标树下新增节点：根据源节点ID操作          
         }
     })            
