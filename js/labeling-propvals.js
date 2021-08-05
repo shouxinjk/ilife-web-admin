@@ -113,38 +113,38 @@ function showProperties(){
         controller: propValues,
 
         fields: [
-            { name: "name", type: "text",align: "center", readOnly: true,title: "名称" },
-            { name: "percentage", type: "text", align: "center", title: "比重" },
-            { name: "alpha", type: "text", align: "center", title: "alpha" },
-            { name: "beta", type: "text", align: "center", title: "beta" },
-            { name: "gamma", type: "text", align: "center", title: "gamma" },
-            { name: "delte", type: "text", align: "center", title: "delte" },
-            { name: "epsilon", type: "text", align: "center", title: "epsilon" },
-            { name: "zeta", type: "text", align: "center", title: "zeta" },
-            { name: "eta", type: "text", align: "center", title: "eta" },
-            { name: "theta", type: "text", align: "center", title: "theta" },
+            { name: "name", type: "text",align: "center", readOnly: true,title: "名称",width:"80px" },
+            { name: "percentage", type: "text", align: "center", title: "比重",width:"80px" },
+            { name: "alpha", type: "text", align: "center", title: "alpha",width:"80px" },
+            { name: "beta", type: "text", align: "center", title: "beta",width:"80px" },
+            { name: "gamma", type: "text", align: "center", title: "gamma",width:"80px" },
+            { name: "delte", type: "text", align: "center", title: "delte",width:"80px" },
+            { name: "epsilon", type: "text", align: "center", title: "epsilon",width:"80px" },
+            { name: "zeta", type: "text", align: "center", title: "zeta",width:"80px" },
+            { name: "eta", type: "text", align: "center", title: "eta",width:"80px" },
+            { name: "theta", type: "text", align: "center", title: "theta",width:"80px" },
             {//动态汇总当前vals值是否合计为1
                 align:'center',
                 headerTemplate: function() {
-                    return "<th class='jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable' style='width: 100px;'>vals小计</th>";
+                    return "<th class='jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable' style='width: 80px;'>vals小计</th>";
                 },
                 itemTemplate: function(value, item) {
                     var subTotal= item.alpha+item.beta+item.gamma+item.delte+item.epsilon;
                     updateCharts(); //刷新图表：只能在更新数据时执行
-                    return "<span style='width: 100px;color:"+(subTotal.toFixed(2)==1?"green":"red")+";font-weight:bold;'>"+subTotal.toFixed(2)+"</span>";
+                    return "<span style='color:"+(subTotal.toFixed(2)==1?"green":"red")+";font-weight:bold;'>"+subTotal.toFixed(2)+"</span>";
                 }
             },
             {//动态汇总当前cost值是否合计为1
                 align:'center',
                 headerTemplate: function() {
-                    return "<th class='jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable' style='width: 100px;'>cost小计</th>";
+                    return "<th class='jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable' style='width: 80px;'>cost小计</th>";
                 },
                 itemTemplate: function(value, item) {
                     var subTotal= item.zeta+item.eta+item.theta;
-                    return "<span style='width: 100px;color:"+(subTotal.toFixed(2)==1?"green":"red")+";font-weight:bold;'>"+subTotal.toFixed(2)+"</span>";
+                    return "<span style='color:"+(subTotal.toFixed(2)==1?"green":"red")+";font-weight:bold;'>"+subTotal.toFixed(2)+"</span>";
                 }
             },            
-            { type: "control" }
+            { type: "control",width:"80px" }
         ]
     });
  
