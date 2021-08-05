@@ -292,7 +292,7 @@ function showSumAndCharts(show){
 function changeGridHeight(){ 
     //修改JsGrid实际高度：采用暴力办法，每行高度26，总高度 = (行数+1)*26
     var elmentHeight = $("#property-values").height();
-    var expectHeight = ($("#property-values").jsGrid("option", "data" ).length+1)*26;
+    var expectHeight = ($("#property-values").jsGrid("option", "data" ).length+1)*32;
     if(elmentHeight==expectHeight){
         console.log("change jsgrid height end.",elmentHeight,expectHeight);
         //clearInterval(changeGridHeightTimer);
