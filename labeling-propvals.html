@@ -25,18 +25,18 @@
 </head>
 
 <body>
-    <div class="header">
+    <div class="header" id="headerDiv">
         <div class="search">
             <span>MAN生活</span>
-            <span id="tipText">属性VALS标注：分别填写alpha、beta、gamma、delte、epsillon；zeta、eta、theta</span>
+            <span id="tipText">属性VALS标注：分别填写weight、alpha、beta、gamma、delte、epsillon；zeta、eta、theta</span>
         </div>
     </div>
 
 
-    <div class="nav">
+    <!--div class="nav">
         <ul class="navUl">
         </ul>
-    </div>   
+    </div-->   
 
     <div class="container">
         <div id="tree-source-div" class="category-widget-wrapper-narrow">
@@ -46,29 +46,36 @@
         <div id="property-div" class="category-widget-wrapper-wide">
             <h4 class="property-widget-title"><a href="#">请对以下属性VALS满足进行标注</a></h4>
             <div id="property-values" class="category-widget list-group col nested-sortable">
-                赶紧的，展开左侧类目树并选择一个分类
-                <!--div class="list-group-item nested-1" draggable="false" style>
-                    Rank 9
-                    <div class="list-group nested-sortable">
-                        <div class="list-group-item nested-2" style>Item 9.1</div>
-                        <div class="list-group-item nested-2" style>Item 9.2</div>
-                    </div>
-                </div>
-                <div class="list-group-item nested-1" draggable="false" style>
-                    Rank 8
-                    <div class="list-group nested-sortable">
-                        <div class="list-group-item nested-2" style>Item 8.1</div>
-                        <div class="list-group-item nested-2" style>Item 8.2</div>
-                    </div>
-                </div>   
-                <div class="list-group-item nested-1" draggable="false" style>
-                    Rank 7
-                    <div class="list-group nested-sortable">
-                        <div class="list-group-item nested-2" style>Item 7.1</div>
-                        <div class="list-group-item nested-2" style>Item 7.2</div>
-                    </div>
-                </div-->                             
-            </div>              
+                赶紧的，展开左侧类目树并选择一个分类                           
+            </div>    
+
+
+            <div class="jsgrid-grid-header" id="sum-div" style="display:none">
+                <table class="jsgrid-table">
+                    <tbody>
+                        <tr class="jsgrid-header-row">
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;">汇总</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-w">weight</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-a">alpha</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-b">beta</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-c">gamma</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-d">delte</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-e">epsilon</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-x">zeta</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-y">eta</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;" id="total-z">theta</th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;"></th>
+                            <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable" style="width: 100px;"></th>
+                            <th class="jsgrid-header-cell jsgrid-control-field jsgrid-align-center" style="width: 50px;"></th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="container " id="sum-chart">
+                <div id="vals-chart" class="category-widget-wrapper" style="width: 600px;height:400px;"></div>
+                <div id="cost-chart" class="category-widget-wrapper" style="width: 600px;height:400px;"></div>                           
+            </div>             
         </div>
     </div>
 </body>
@@ -76,9 +83,10 @@
 <!--script src="https://code.jquery.com/jquery-1.12.4.min.js"></script-->
 <script type="text/javascript" src="ext/jquery-1.12.4.min.js"></script>
 <script type="text/javascript" src="js/util.js"></script>
-<script type="text/javascript" src="js/labeling-propvals.js?v=0.28"></script>
+<script type="text/javascript" src="js/labeling-propvals.js?v=0.36"></script>
 <script type="text/javascript" src="ext/dhtml/tree.min.js?v=7.1.7"></script>
 <script type="text/javascript" src="ext/jsgrid-1.5.3/jsgrid.min.js"></script>
+<script type="text/javascript" src="ext/echarts-5.1.2/echarts.min.js"></script>
 <script>
 
 </script>
