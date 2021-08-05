@@ -81,10 +81,10 @@ function loadSourceTree(){
 }
 
 //加载属性列表
-function loadProperties(categoryId){
+function loadProperties(categoryId){   
     if(categoryId){
         propValues = null;
-        $("#property-values").empty();    
+        $("#property-values").empty();   //清空属性列表
         initializeGrid(categoryId);  
         showProperties();
     }else{
@@ -288,7 +288,6 @@ function showSumAndCharts(show){
         $("#sum-chart").css("display","none");
     }
 }
-
 
 function changeGridHeight(){ 
     //修改JsGrid实际高度：采用暴力办法，每行高度26，总高度 = (行数+1)*26
