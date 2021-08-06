@@ -131,27 +131,24 @@ function loadPlatforms(currentPlatform){
 
 
 //建立 第三方类目 与标准类目映射。直接将附加数据存储到arangodb
+//同时Foxx会自动更新补全fullpath
+//TODO：完成后提交索引
 function mappingCategory(itemKey,platformCategoryId,platformCategoryName,standardCategoryId,standardCategoryName){//提交映射第三方电商平台到标准类目
     var data = {
-        records:[{
-            value:{
-                _key:itemKey,
-                mappingId:standardCategoryId,
-                mappingName:standardCategoryName
-            }
-        }]
+        mappingId:standardCategoryId,
+        mappingName:standardCategoryName
     };
     $.ajax({
-        url:"http://kafka-rest.shouxinjk.net/topics/category",
-        type:"post",
+        url:"https://data.shouxinjk.net/_db/sea/labeling/category/platform_categories/fullpath/"+itemKey,
+        type:"patch",
         data:JSON.stringify(data),//注意：不能使用JSON对象
         headers:{
-            "Content-Type":"application/vnd.kafka.json.v2+json",
-            "Accept":"application/vnd.kafka.v2+json"
+            "Content-Type":"application/json",
+            "Accept":"application/json"
         },
         success:function(result){
             //更新界面显示
-            console.log("try to update tree:",platformCategoryId,platformCategoryName,standardCategoryId,standardCategoryName);
+            console.log("mapping done. try to re-index.",result);
             //treeSource.data.update(standardCategoryId, { value: platformCategoryName+"-->"+standardCategoryName});//修改源目录下的节点显示内容
             var orgPlatformCategoryName = platformCategoryName.split("-->")[0];//对于修改的情况，需要剔除原有映射
             treeTarget.data.update(platformCategoryId, { value: orgPlatformCategoryName+"-->"+ standardCategoryName });//修改目标目录下的节点显示内容
