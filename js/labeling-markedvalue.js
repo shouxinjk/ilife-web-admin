@@ -48,6 +48,8 @@ var treeTarget = null;
 
 var sourceArray = ["pdd","jd","tmall","taobao","kaola","fliggy","ctrip","gome","suning","dangdang","dhc","amazon"];//source list
 
+var rankDescArray = ["","1-极差","2-很差","3-差","4-不太好","5-一般般","6-较好","7-很好","8-相当好","9-好极了"];
+
 //**
 var sourceTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/standard-properties";
 var targetTreeDataUrl = "http://www.shouxinjk.net/ilife/a/mod/itemCategory/third-party-properties";
@@ -85,14 +87,53 @@ function loadProperties(propertyId){
         url:"http://www.shouxinjk.net/ilife/a/ope/performance/rest/byMeasureId?measureId="+propertyId,
         type:"get",
         success:function(msg){
+            assemblePropertyValues(msg);
+            /**
+            console.log("got values.",msg);
             var divObj = $("#property-values");
             for(var i = 0 ; i < msg.length ; i++){
                 divObj.append("<div class='list-group-item nested-1' draggable='false' data-id='"+msg[i].id+"' data-level='"+(msg[i].level?msg[i].level:'')+"' data-score='"+(msg[i].markedValue?msg[i].markedValue:'')+"' style>"+msg[i].originalValue+"</div>");
             }
             //加载完成后显示到界面
             showProperties();
+            //**/
         }
     })    
+}
+
+function assemblePropertyValues(values){
+        console.log("got values.",values);
+        //组装一个分级数组，总共9级，使用value.level组装。采用字符串
+        var rankedValueArray = [];
+        for(var i=0;i<10;i++){
+            rankedValueArray[i]=[];
+        }
+        //将属性值分别放入分级数组中
+        for(var i = 0 ; i < values.length ; i++){
+            var value = values[i];
+            if(!value.level || value.level<1 || value.level>9){//仅支持分级为1-9，其余均塞到level=5里
+                value.level = 5;
+            }
+            //每一个元素均作为可拖动内容
+            var valueHtml = "<div class='list-group-item nested-2 value-style-"+value.level+"' id='"+value.id+"' data-id='"+value.id+"' data-level='"+(value.level?value.level:'5')+"' data-score='"+(value.markedValue?value.markedValue:'')+"' style>"+value.originalValue+"</div>";
+            rankedValueArray[value.level].push(valueHtml);
+        }
+        //将分级数值组装为可拖拽列表
+        var divObj = $("#property-values");
+        for(var i = 9 ; i > 0 ; i--){//仅处理1-9即可，倒序显示
+            var rankHtml = "";
+            rankHtml += '<div class="list-group-item nested-1'+(i==1?'':' rank-bottom-line')+'" draggable="false" id="data-rank-'+i+'" data-rank="'+i+'"  style>';
+            rankHtml += 'Rank '+rankDescArray[i];
+            rankHtml += '<div class="list-group nested-sortable">';
+            for(var k=0;k<rankedValueArray[i].length;k++){
+                rankHtml += rankedValueArray[i][k];
+            }
+            rankHtml += '</div>';
+            rankHtml += '</div>';
+            divObj.append(rankHtml);
+        }
+        //加载完成后显示到界面
+        showProperties();    
 }
 
 //显示属性列表
@@ -109,22 +150,30 @@ function showProperties(){
             swapThreshold: 0.65,
             ghostClass: 'blue-background-class',
             // 元素从一个列表拖拽到另一个列表
-            /*
+            //*
             onAdd: function (evt) {
                 // same properties as onEnd
-                console.log("onAdd",evt);
+                //console.log("onAdd",evt);
+                console.log("target rank:",evt.target.parentNode.dataset.rank);
+                console.log("item:",evt.item.id);
+                for(var i=1;i<10;i++){
+                    $("#"+evt.item.id).removeClass("value-style-"+i);
+                }
+                $("#"+evt.item.id).addClass("value-style-"+evt.target.parentNode.dataset.rank);
+                //TODO 提交标注值到服务器端。注意界面仅显示当前用户标注值，不显示汇总标注值结果
             },
         
             // 列表内元素顺序更新的时候触发
+            /**
             onUpdate: function (evt) {
                 // same properties as onEnd
                 console.log("onUpdate",evt);
             },
             //**/
             // 列表的任何更改都会触发
-            //**
+            /**
             onSort: function (evt) {
-                // same properties as onEnd
+                //Todo：修改属性分值：一个用户仅能创建一条记录
                 console.log("onSort",evt);
             },
             //**/
