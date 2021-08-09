@@ -43,7 +43,7 @@ var columnMargin = 5;//默认留白5px
 var source = "pdd";//电商平台：默认为拼多多，其他通过参数传递
 var sourceRoot = "0";//默认为拼多多
 
-var hideHeaderBar = true;//是否显示顶部header，默认为false。通过参数 hideHeaderBar 控制隐藏
+var hideHeaderBar = false;//是否显示顶部header，默认为false。通过参数 hideHeaderBar 控制隐藏
 
 var treeSource = null;
 var treeTarget = null;
