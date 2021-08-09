@@ -167,7 +167,7 @@ function index(data){//data是一个mapping文档
         }]
     };
     $.ajax({
-        url:"http://kafka-rest.shouxinjk.net/topics/category",
+        url:"http://kafka-rest.shouxinjk.net/topics/category-mapping",
         type:"post",
         data:JSON.stringify(data),//注意：不能使用JSON对象
         headers:{
