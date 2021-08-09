@@ -17,6 +17,12 @@ $(document).ready(function ()
     source = args["source"]?args["source"]:source; //支持根据电商平台切换，默认为pdd
     sourceRoot = args["sourceRoot"]?args["sourceRoot"]:sourceRoot; //支持根据电商平台切换，默认为pdd
 
+    //设置提示信息
+    hideHeaderBar = args["hideHeaderBar"]?true:false;//控制是否显示顶部提示条
+    if(hideHeaderBar){//如果为false则隐藏
+        $("#headerDiv").css('display','none'); 
+    }
+
     //初始化两颗目录树
     treeSource = new dhx.Tree("tree-source", {
         dragMode: "both",//支持反向从第三方平台建立标准属性
@@ -34,6 +40,8 @@ var columnMargin = 5;//默认留白5px
 
 var source = "pdd";//电商平台：默认为拼多多，其他通过参数传递
 var sourceRoot = "0";//默认为拼多多
+
+var hideHeaderBar = false;//是否显示顶部header，默认为false。通过参数 hideHeaderBar 控制隐藏
 
 var treeSource = null;
 var treeTarget = null;

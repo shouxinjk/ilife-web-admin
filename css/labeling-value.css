@@ -123,17 +123,15 @@ code {
 }
 
 .nested-1 {
-    font-size: 1.8rem;
-    background-color: #7FFFD4;
+    font-size: 14px;
     padding: 5px;
     overflow: hidden;
-    width: 100px;
-    border: 1px solid green;
+    width: 200px;
+    border: 1px solid silver;
     border-radius: 20px;
     line-height: 20px;
     text-align: center;
     font-weight: bold;
-    color: green;
 }
 
 .nested-2 {
