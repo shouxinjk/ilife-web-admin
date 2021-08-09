@@ -109,7 +109,7 @@ function showProperties(){
             { name: "originalValue", type: "text",align: "center", readOnly: true,title: "原始值" },
             { name: "level", type: "select", items: propValues.ranks, valueField: "value", textField: "name", align: "center", title: "分级(1-9)" },
             { name: "controlValue", type: "number", align: "center", title: "打分(0-9)" },
-            { name: "markedValue", type: "number", align: "center", readOnly: true, title: "标注参考" },
+            { name: "markedValue", type: "number", align: "center", readOnly: true, title: "达人标注值" },
             { type: "control" }
         ]
     });
