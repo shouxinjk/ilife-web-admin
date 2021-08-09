@@ -113,7 +113,7 @@ function showProperties(){
         controller: propValues,
 
         fields: [
-            { name: "name", type: "text",align: "center", readOnly: true,title: "名称",width:"80px" },
+            { name: "name", type: "text",align: "center", readOnly: true,title: "名称",width:"120px" },
             { name: "percentage", type: "text", align: "center", title: "比重",width:"80px" },
             { name: "alpha", type: "text", align: "center", title: "alpha",width:"80px" },
             { name: "beta", type: "text", align: "center", title: "beta",width:"80px" },
