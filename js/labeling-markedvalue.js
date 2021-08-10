@@ -32,7 +32,7 @@ $(document).ready(function ()
     //loadPlatforms(source);//加载顶部导航栏
 
     loadSourceTree();//加载标准目录树
-    loadProperties();//加载属性值列表
+    //loadPropertyValues();//加载属性值列表
 });
 
 var columnWidth = 300;//默认宽度300px
@@ -71,7 +71,10 @@ function loadSourceTree(){
             //先清空属性值显示区域
             $("#property-values").empty();
             //获取属性值列表并显示 
-            loadProperties(id.replace("prop-",""));
+            loadPropertyValues(id.replace("prop-",""));
+        }else{//否则提示选择属性
+            $("#property-values").empty();
+            $("#property-values").append("<div>请展开左侧分类树，并选择属性节点开始标注</div>");
         }
     });    
 
@@ -82,21 +85,12 @@ function loadSourceTree(){
 }
 
 //加载属性列表
-function loadProperties(propertyId){
+function loadPropertyValues(propertyId){
     $.ajax({
         url:"http://www.shouxinjk.net/ilife/a/ope/performance/rest/byMeasureId?measureId="+propertyId,
         type:"get",
         success:function(msg){
             assemblePropertyValues(msg);
-            /**
-            console.log("got values.",msg);
-            var divObj = $("#property-values");
-            for(var i = 0 ; i < msg.length ; i++){
-                divObj.append("<div class='list-group-item nested-1' draggable='false' data-id='"+msg[i].id+"' data-level='"+(msg[i].level?msg[i].level:'')+"' data-score='"+(msg[i].markedValue?msg[i].markedValue:'')+"' style>"+msg[i].originalValue+"</div>");
-            }
-            //加载完成后显示到界面
-            showProperties();
-            //**/
         }
     })    
 }
@@ -122,7 +116,7 @@ function assemblePropertyValues(values){
         var divObj = $("#property-values");
         for(var i = 9 ; i > 0 ; i--){//仅处理1-9即可，倒序显示
             var rankHtml = "";
-            rankHtml += '<div class="list-group-item nested-1'+(i==1?'':' rank-bottom-line')+'" draggable="false" id="data-rank-'+i+'" data-rank="'+i+'"  style>';
+            rankHtml += '<div class="list-group-item nested-1 value-style-'+i+'" draggable="false" id="data-rank-'+i+'" data-rank="'+i+'"  style>';
             rankHtml += 'Rank '+rankDescArray[i];
             rankHtml += '<div class="list-group nested-sortable">';
             for(var k=0;k<rankedValueArray[i].length;k++){
@@ -133,11 +127,11 @@ function assemblePropertyValues(values){
             divObj.append(rankHtml);
         }
         //加载完成后显示到界面
-        showProperties();    
+        showPropertyValues();    
 }
 
 //显示属性列表
-function showProperties(){
+function showPropertyValues(){
     // Nested demo
     var nestedSortables = [].slice.call(document.querySelectorAll('.nested-sortable'));
 

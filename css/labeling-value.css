@@ -127,7 +127,7 @@ code {
 .value-style-8{background-color: #36bf36}
 .value-style-7{background-color: #c6ebbd}
 .value-style-6{background-color: #e3f5de}
-.value-style-5{background-color: #cccccc}
+.value-style-5{background-color: #eeeeee}
 .value-style-4{background-color: #ffc3b0}
 .value-style-3{background-color: #fba58b}
 .value-style-2{background-color: #f38766}
@@ -138,18 +138,19 @@ code {
 }
 
 .nested-1 {
-    font-size: 14px;
+    font-size: 12px;
     padding: 5px;
     overflow: hidden;
     font-weight: bold;
     vertical-align: middle;
     min-height: 50px;
+    border:2px dashed silver;
 }
 
 .nested-2 {
 	font-size: 14px;
 	width:100px;
-	border:1px solid silver;
+	border:1px solid grey;
 	border-radius: 10px;
 	line-height: 20px;
 	text-align: center;
