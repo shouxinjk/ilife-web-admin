@@ -109,7 +109,15 @@ function assemblePropertyValues(values){
                 value.level = 5;
             }
             //每一个元素均作为可拖动内容
-            var valueHtml = "<div class='list-group-item nested-2 value-style-"+value.level+"' id='"+value.id+"' data-id='"+value.id+"' data-level='"+(value.level?value.level:'5')+"' data-score='"+(value.markedValue?value.markedValue:'')+"' style>"+value.originalValue+"</div>";
+            var valueHtml = "<div class='list-group-item nested-2 value-style-"+value.level
+                            +"' id='"+value.id
+                            +"' data-id='"+value.id
+                            +"' data-level='"+(value.level?value.level:'5')
+                            +"' data-score='"+(value.markedValue?value.markedValue:'')
+                            +"' data-measureId='"+value.measure.id
+                            +"' data-personId='"+value.updateBy.id
+                            +"' data-originalValue='"+value.originalValue
+                            +"' style>"+value.originalValue+"</div>";
             rankedValueArray[value.level].push(valueHtml);
         }
         //将分级数值组装为可拖拽列表
@@ -155,6 +163,8 @@ function showPropertyValues(){
                 }
                 $("#"+evt.item.id).addClass("value-style-"+evt.target.parentNode.dataset.rank);
                 //TODO 提交标注值到服务器端。注意界面仅显示当前用户标注值，不显示汇总标注值结果
+                console.log(evt.item.dataset.measureid,evt.item.dataset.originalvalue,evt.target.parentNode.dataset.rank,evt.item.dataset.personid);
+                commitMarkedValue(evt.item.dataset.measureid,evt.item.dataset.originalvalue,evt.target.parentNode.dataset.rank,evt.item.dataset.personid);
             },
         
             // 列表内元素顺序更新的时候触发
@@ -182,4 +192,38 @@ function showPropertyValues(){
     }    
 }
 
+function commitMarkedValue(measureId,originalValue,value,personId){
+    var item={
+        originalValue: originalValue,
+        value: value,
+        personId: personId,
+        measureId: measureId                    
+    }
+    $.ajax({
+        type: "POST",
+        url: "http://www.shouxinjk.net/ilife/a/ope/humanMarkedValue/rest/value",
+        data:JSON.stringify(item),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/json",
+            "Accept":"application/json"
+        },        
+        success:function(result){
+            if(result.result=="error"){
+                $.toast({
+                    heading: 'Error',
+                    text: result.msg,
+                    showHideTransition: 'fade',
+                    icon: 'error'
+                })   
+            }else{
+                $.toast({
+                    heading: 'Success',
+                    text: result.msg,
+                    showHideTransition: 'fade',
+                    icon: 'success'
+                })                  
+            }
+        }                
+    });      
+}
 
