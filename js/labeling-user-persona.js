@@ -111,16 +111,15 @@ function loadPersona(personaId){
         success:function(result){
             console.log("got persona.",result);
             if(!result._key){
-                $.toast({
-                    heading: 'Error',
-                    text: '错误，没有Persona明细数据。',
-                    showHideTransition: 'fade',
-                    icon: 'error'
-                })                 
+                persona = { //设置一个空白persona，并且_key与personaId保持一致
+                    _key:personaId
+                }  
+                createPersona(persona);              
+            }else{
+                persona = result;               
             }
-            persona = result;
             //将值设置进入form scheme
-            formScheme.value = result;
+            formScheme.value = persona;             
             //设置提交事件
             formScheme.onSubmit = formSubmit;
             console.log("scheme with value.",formScheme);
@@ -145,12 +144,26 @@ function commitPersona(values){
                 icon: 'success'
             }) 
         }
+    });  
+}
+
+//查询失败则直接创建一个Persona
+function createPersona(persona){
+    $.ajax({//提交Persona定义
+        type: "POST",
+        url: "https://data.shouxinjk.net/_db/sea/persona/personas",
+        data: JSON.stringify(persona),
+        success:function(result){
+            console.log("persona created.",result);
+            createNewPersona = false;//恢复设置
+            $.toast({
+                heading: 'Info',
+                text: 'Persona已创建',
+                showHideTransition: 'fade',
+                icon: 'info'
+            }) 
+        }
     }); 
-
-
-
-
-    
 }
 
 
