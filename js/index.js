@@ -88,7 +88,7 @@ function loadItems(){//获取内容列表
     var url = 'https://data.shouxinjk.net/_db/sea/_api/cursor';
     var q={
         //query: "For doc in my_stuff filter doc.tagging==null and (doc.link.web2!=null or doc.link.qrcode!=null) sort doc.task.timestamp desc return doc", 
-        query: "For doc in my_stuff filter doc.status.sync=='ready' and doc.status.classify=='pending' sort doc.task.timestamp desc return doc", 
+        query: "For doc in my_stuff filter doc.status.classify=='pending' and doc.status.sync=='ready' sort doc.task.timestamp desc return doc", 
         count:  true,
         batchSize: 10//默认显示10条
     };    
