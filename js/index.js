@@ -87,12 +87,14 @@ function loadItems(){//获取内容列表
     //query by aql: 选取tagging为空，并且已经有cps链接或qrcode的条目
     var url = 'https://data.shouxinjk.net/_db/sea/_api/cursor';
     var q={
-        query: "For doc in my_stuff filter doc.tagging==null and (doc.link.web2!=null or doc.link.qrcode!=null) sort doc.task.timestamp desc return doc", 
+        //query: "For doc in my_stuff filter doc.tagging==null and (doc.link.web2!=null or doc.link.qrcode!=null) sort doc.task.timestamp desc return doc", 
+        query: "For doc in my_stuff filter doc.status.sync=='ready' and doc.status.classify=='pending' sort doc.task.timestamp desc return doc", 
         count:  true,
         batchSize: 10//默认显示10条
     };    
     if (showAllItems) {//如果显示所有则提示全部内容
-        q.query = "For doc in my_stuff filter doc.tagging==null sort doc.task.timestamp desc return doc";
+        //q.query = "For doc in my_stuff filter doc.tagging==null sort doc.task.timestamp desc return doc";
+        q.query = "For doc in my_stuff filter doc.status.classify=='pending' sort doc.task.timestamp desc return doc";
     }     
     $.ajax({
         url:url,
