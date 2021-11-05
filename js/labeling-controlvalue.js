@@ -64,12 +64,15 @@ function loadSourceTree(){
     console.log("\n\nstart query standard categories ...");
     treeSource.data.load(sourceTreeDataUrl+"?id=tree-source");//默认情况下，直接挂到div节点，id与div-id一致。后端API接口需要进行处理：映射到根节点的ID
     treeSource.events.on("ItemClick", function(id, e){
-        console.log("The item with the id "+ id +" was clicked.");
+        console.log("The item with the id "+ id +" was clicked.",e);
         if(id.startsWith("prop-")){//如果是属性则加载属性值
             //先清空属性值显示区域
             $("#property-values").empty();
+            //获取当前属性节点所在目录。.parent.parent得到category节点
+            var categoryId = $("li[dhx_id='"+id+"']").parent().parent().attr("dhx_id");
+            console.log("got category id.",categoryId);
             //获取属性值列表并显示 
-            loadProperties(id.replace("prop-",""));
+            loadProperties(id.replace("prop-",""),categoryId);
         }else{
             console.log("要点击属性才能显示右侧属性值列表啊，笨蛋");
         }
@@ -82,11 +85,11 @@ function loadSourceTree(){
 }
 
 //加载属性列表
-function loadProperties(propertyId){
+function loadProperties(propertyId,categoryId){
     if(propertyId){
         propValues = null;
         $("#property-values").empty();    
-        initializeGrid(propertyId);  
+        initializeGrid(propertyId,categoryId);  
         showProperties();
     }else{
         console.log("请选择一个属性啊，笨蛋");
@@ -123,12 +126,12 @@ function showProperties(){
  
 }
 
-function initializeGrid(propertyId){
+function initializeGrid(propertyId,categoryId){
     propValues = {
         loadData: function(filter) {
            return $.ajax({
                 type: "GET",
-                url: "http://www.shouxinjk.net/ilife/a/ope/performance/rest/measure/"+propertyId,
+                url: "http://www.shouxinjk.net/ilife/a/ope/performance/rest/values/"+propertyId+"/"+categoryId,
                 data: filter
             });
         },

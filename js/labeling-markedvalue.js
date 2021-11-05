@@ -66,12 +66,15 @@ function loadSourceTree(){
     console.log("\n\nstart query standard categories ...");
     treeSource.data.load(sourceTreeDataUrl+"?id=tree-source");//默认情况下，直接挂到div节点，id与div-id一致。后端API接口需要进行处理：映射到根节点的ID
     treeSource.events.on("ItemClick", function(id, e){
-        console.log("The item with the id "+ id +" was clicked.");
+        console.log("The item with the id "+ id +" was clicked.",e);
         if(id.startsWith("prop-")){//如果是属性则加载属性值
             //先清空属性值显示区域
             $("#property-values").empty();
+            //获取当前属性节点所在目录。.parent.parent得到category节点
+            var categoryId = $("li[dhx_id='"+id+"']").parent().parent().attr("dhx_id");
+            console.log("got category id.",categoryId);
             //获取属性值列表并显示 
-            loadPropertyValues(id.replace("prop-",""));
+            loadPropertyValues(id.replace("prop-",""),categoryId);
         }else{//否则提示选择属性
             $("#property-values").empty();
             $("#property-values").append("<div>请展开左侧分类树，并选择属性节点开始标注</div>");
@@ -85,9 +88,10 @@ function loadSourceTree(){
 }
 
 //加载属性列表
-function loadPropertyValues(propertyId){
+function loadPropertyValues(propertyId,categoryId){
     $.ajax({
-        url:"http://www.shouxinjk.net/ilife/a/ope/performance/rest/byMeasureId?measureId="+propertyId,
+        url: "http://www.shouxinjk.net/ilife/a/ope/performance/rest/values/"+propertyId+"/"+categoryId,
+        //url: "http://localhost:8080/iLife/a/ope/performance/rest/values/"+propertyId+"/"+categoryId,
         type:"get",
         success:function(msg){
             assemblePropertyValues(msg);
@@ -115,6 +119,7 @@ function assemblePropertyValues(values){
                             +"' data-level='"+(value.level?value.level:'5')
                             +"' data-score='"+(value.markedValue?value.markedValue:'')
                             +"' data-measureId='"+value.measure.id
+                            +"' data-categoryId='"+value.category.id
                             +"' data-personId='"+value.updateBy.id
                             +"' data-originalValue='"+value.originalValue
                             +"' style>"+value.originalValue+"</div>";
@@ -164,7 +169,7 @@ function showPropertyValues(){
                 $("#"+evt.item.id).addClass("value-style-"+evt.target.parentNode.dataset.rank);
                 //TODO 提交标注值到服务器端。注意界面仅显示当前用户标注值，不显示汇总标注值结果
                 console.log(evt.item.dataset.measureid,evt.item.dataset.originalvalue,evt.target.parentNode.dataset.rank,evt.item.dataset.personid);
-                commitMarkedValue(evt.item.dataset.measureid,evt.item.dataset.originalvalue,evt.target.parentNode.dataset.rank,evt.item.dataset.personid);
+                commitMarkedValue(evt.item.dataset.categoryid,evt.item.dataset.measureid,evt.item.dataset.originalvalue,evt.target.parentNode.dataset.rank,evt.item.dataset.personid);
             },
         
             // 列表内元素顺序更新的时候触发
@@ -192,16 +197,19 @@ function showPropertyValues(){
     }    
 }
 
-function commitMarkedValue(measureId,originalValue,value,personId){
+function commitMarkedValue(categoryId,measureId,originalValue,value,personId){
     var item={
         originalValue: originalValue,
         value: value,
         personId: personId,
+        categoryId: categoryId,
         measureId: measureId                    
     }
+    console.log("try to update marked value.",item);
     $.ajax({
         type: "POST",
         url: "http://www.shouxinjk.net/ilife/a/ope/humanMarkedValue/rest/value",
+        //url: "http://localhost:8080/iLife/a/ope/humanMarkedValue/rest/value",
         data:JSON.stringify(item),//注意：不能使用JSON对象
         headers:{
             "Content-Type":"application/json",
