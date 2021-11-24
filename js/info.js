@@ -35,11 +35,17 @@ $(document).ready(function ()
     loadItem(id);   
     //loadHosts(id);//管理页面不需要加载关注列表
 
+    //判断是否是嵌入模式：hideHeaderBar
+    hideHeaderBar = args["hideHeaderBar"]?true:false;
+    if(hideHeaderBar){
+        $(".header").css("display","none");
+    }
 
 });
 
 var _sxdebug = true;
 
+var hideHeaderBar = true;
 var showAllItems = false;
 var map = null;
 

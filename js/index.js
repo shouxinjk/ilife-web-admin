@@ -190,7 +190,7 @@ function insertItem(){
     //注册事件
     $("div[data='"+item._key+"']").click(function(){
         //跳转到详情页
-        window.location.href = "info.html?category="+category+"&id="+item._key+(showAllItems?"&showAllItems=true":"");
+        window.location.href = "info.html?category="+category+"&id="+item._key+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
     });
 
     // 表示加载结束
