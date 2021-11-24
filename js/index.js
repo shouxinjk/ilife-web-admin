@@ -20,12 +20,19 @@ $(document).ready(function ()
     category = args["category"]?args["category"]:0; //如果是跳转，需要获取当前目录
     loadCategories(category);
 
-    //设置提示信息
+    //设置提示信息：是否显示所有条目 showAllItems
     showAllItems = args["showAllItems"]?true:false;//传入该参数则显示全部内容
     if(showAllItems){
         $("#tipText").text("当前显示全部商品，请关闭自动入库功能");
         $('#tipText').css('color', 'red');
     }
+
+    //判断是否是嵌入模式：hideHeaderBar
+    hideHeaderBar = args["hideHeaderBar"]?true:false;
+    if(hideHeaderBar){
+        $(".header").css("display","none");
+    }
+
 });
 
 var columnWidth = 300;//默认宽度300px
@@ -42,6 +49,7 @@ var hasMore = false;
 var cursorId = null;
 
 var showAllItems = false;
+var hideHeaderBar = true;
 
 setInterval(function ()
 {

@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="ext/galleryview/css/galleryview.css">
     <link rel="stylesheet" type="text/css" href="ext/toast/jquery.toast.min.css">
     <link rel="stylesheet" type="text/css" href="ext/jstree/theme/default/style.min.css">
+    <link rel="stylesheet" type="text/css" href="ext/cascade-select/cascader.css?v=0.7">   
     <link type="text/css" rel="stylesheet" href="ext/jsgrid-1.5.3/jsgrid.min.css" /> 
 	<link type="text/css" rel="stylesheet" href="ext/jsgrid-1.5.3/jsgrid-theme.min.css" />
     <link rel="stylesheet" type="text/css" href="css/reset2.0.min.css">
@@ -49,7 +50,15 @@
                 <div>
                     <label for="tagging">标签/推荐语</label>
                     <textarea id="tagging" rows="5"></textarea>
-                </div>               
+                </div>  
+                <!--标签--> 
+                <!--div class="tag-wrapper">
+                    <label for="tagging" class="formLabel">标签/推荐语</label>
+                    <div  class="tagging">
+                        <ul id="tagging" style="font-size:12px;border:1px solid #dcdfe6;">
+                        </ul>    
+                    </div>            
+                </div-->                              
                 <div>
                     <label for="web2link">PC端推广链接（请拷贝后重新生成）</label>
                     <input id="web2link" placeholder=""/><br/>
@@ -58,20 +67,37 @@
                     <label for="wap2link">移动端推广链接（请拷贝后重新生成）</label>
                     <input id="wap2link" placeholder=""/>
                 </div>
-               	<div>
+               	<!--div>
                		<label>类别</label> 
                		<input id="category" value="-" readonly="true" />
                	</div>               	
                	<div id="categoryWrapper">
                		<label>重新选择</label><button id="changeCategoryBtn" type="button" class="cancel-btn">&nbsp;修改&nbsp;</button>
                		<div id="categoryTree"></div>
-               	</div>
-                <div id="propsWrapper">
+               	</div-->
+                <!--类目选择器-->
+                <div>
+                    <label for="category-wrap" class="formLabel" style="line-height: 18px;">类别</label>
+                    <div id="category-wrap" class="cascader-wrap"></div>
+                </div>            
+                <!--div id="propsWrapper">
                		<label>详细参数</label><a href="#" id="changePropertyBtn">标注检查</a>
                		<div id="propsList"></div>
-               	</div> 
+               	</div--> 
+                <!--属性列表-->
+                <div id="propsDiv" style="display:none">
+                    <label class="formLabel" style="line-height: 18px;">属性</label>
+                    <div id="propsList"></div>
+                </div>    
+                  
+            <div class="link">
+                <button id="jumpbtn" type="button" class="buy-btn" style="line-height: 3rem;width:25%;font-size:1rem">去看看 &gt; </button>
+                <button id="cancelbtn" type="button" class="cancel-btn" style="line-height: 3rem;font-size:1rem;width:20%">删除</button>
+                <button id="indexbtn" type="button" class="index-btn" style="line-height: 3rem;font-size:1rem;width:35%">提交/更新索引</button> 
+            </div> 
+
                	<div>
-               		<label>位置</label> <button id="changeAddressBtn" type="button" class="cancel-btn">&nbsp;修改&nbsp;</button>
+               		<label>位置</label>
                		<input id="address" value="珠穆朗玛峰" />
                	</div>                	
                	<div>
@@ -82,11 +108,12 @@
                		<label>纬度</label> 
                		<input id="lat" value="27.9881" readonly="true" />
                	</div>                	               	    
-            	<div id="allmap"></div>                 	         	
-                <div>
+            	<div id="allmap"></div>   
+              <button id="changeAddressBtn" type="button" class="cancel-btn" style="line-height: 1.2rem;font-size:0.8rem;">&nbsp;标注位置&nbsp;</button>              	         	
+                <!--div>
                     <button id="cancelbtn" type="button" class="cancel-btn">&nbsp;删除&nbsp;</button>
                     <button id="indexbtn" type="button" class="index-btn">&nbsp;提交/更新索引&nbsp;</button>
-                </div>
+                </div-->
             </div>
             <div id="title" class="title side"></div>  
             <div id="tags" class="side"></div>                  
@@ -95,9 +122,7 @@
                 <div class="price"></div>
                 <div class="score"></div>
             </div>    
-            <div class="link">
-                <button id="jumpbtn" type="button" class="buy-btn">&nbsp;&nbsp;&nbsp;&nbsp;去 看 看 &gt;&nbsp;&nbsp;&nbsp;&nbsp;    </button>
-            </div>  
+ 
             <div id="qrcodeImgDiv">
                 <img id="qrcodeImg" src=""/>
             </div>                                             
@@ -120,10 +145,14 @@
 
 <!--script src="https://code.jquery.com/jquery-1.12.4.min.js"></script-->
 <script type="text/javascript" src="ext/jquery-1.12.4.min.js"></script>
+<!--script type="text/javascript" src="ext/jquery-ui.min.js"></script-->
 <script type="text/javascript" src="ext/galleryview/js/jquery.galleryview.js"></script>
 <script type="text/javascript" src="ext/galleryview/js/jquery.timers.min.js"></script>
 <script type="text/javascript" src="ext/toast/jquery.toast.min.js"></script>
 <script type="text/javascript" src="ext/jstree/jstree.min.js"></script>
+<script type="text/javascript" src="ext/cascade-select/cascader.js?v=1.8"></script>
+<script type="text/javascript" src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+<!--script type="text/javascript" src="ext/tag-it/js/tag-it.js"charset="utf-8"></script-->
 <script type="text/javascript" src="ext/jsgrid-1.5.3/jsgrid.min.js"></script>
 <script type="text/javascript" src="js/util.js?v=2.0"></script>
 <script type="text/javascript" src="js/info.js?v=1.4"></script>

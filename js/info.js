@@ -31,12 +31,14 @@ $(document).ready(function ()
     map.centerAndZoom(point,12); 
 
     //加载导航和内容
-    loadCategories(category);
+    loadNavigationCategories(category);
     loadItem(id);   
     //loadHosts(id);//管理页面不需要加载关注列表
 
 
 });
+
+var _sxdebug = true;
 
 var showAllItems = false;
 var map = null;
@@ -64,6 +66,10 @@ var itemCategoryNew = {
     categoryId:null,
     keys:[]
 };
+
+//支持的类目
+var categories = [];
+var cascader = null;//级联选择器实例
 
 //将item显示到页面
 function showContent(item){
@@ -158,6 +164,7 @@ function showContent(item){
     $("#title").html(item.title);
     $("#wap2link").val(item.link.wap2?item.link.wap2:item.link.wap);  
     //分类
+    /**
     $("#category").val((item.category?item.category:"-")+":"+(item.categoryId?item.categoryId:"-"));
     $("#changeCategoryBtn").click(//更改所属分类
         function(){
@@ -166,6 +173,7 @@ function showContent(item){
             loadProps(itemCategoryNew.categoryId);
         }
     ); 
+    //**/
     //地址
     $("#changeAddressBtn").click(//修改地址
         function(){
@@ -191,14 +199,14 @@ function showContent(item){
         }
     );     
     //评分
-    if(item.rank.score){
+    if(item.rank && item.rank.score){
         $("#score .comment").append("<div class='label'>评价</div><div class='rank'>"+item.rank.score+"/<span class='base'>"+item.rank.base+"</span></div>");
     }else{
         $("#score .comment").append("<div class='label'>评价</div><div class='rank'><span class='empty'>暂无评分</span></div>");
     }
     $("#score .price").append("<div class='label'>"+(item.price.currency?item.price.currency:"价格")+"</div><div class='price-sale'><span class='price-bid'>"+(item.price.bid?item.price.bid:"")+"</span>"+item.price.sale+"</div>");
     //$("#score .price").append("<div class='label'>价格</div><div class='price-sale'>"+item.price.sale+"</div>");
-    $("#score .score").append("<div class='label'>推荐度</div><div class='match'>"+(item.rank.match*100)+"%</div>");
+    $("#score .score").append("<div class='label'>推荐度</div><div class='match'>"+(item.rank&&item.rank.match?item.rank.match*100+"%":"-")+"</div>");
     //二维码：使用海报图，将其中二维码进行裁剪
     if(item.link.qrcode){
         $("#qrcodeImg").attr("src",item.link.qrcode);
@@ -212,43 +220,22 @@ function showContent(item){
     if(item.distributor && item.distributor.name){//来源作为标签
         $("#tags").append("<div class='tag'>"+item.distributor.name+"</div>");
     }
-    for(var i=0;i<item.tags.length;i++){
+    for(var i=0;item.tags && i<item.tags.length;i++){
         $("#tags").append("<div class='tag'>" + item.tags[i] + "</div>");
     }
     //获取分类树
+    /**
     $("#categoryTree").jstree({
           "core" : {
             "data" : {
                 "url":"http://www.shouxinjk.net/ilife/a/mod/itemCategory/categoriesAndMeasures",
                 "data":function(node){
                   return { parentId : node.id==='#'?'1':node.id};
-                },
-
-                /**
-                //该版本jsTree不支持在回调中修改数据，直接通过原始返回数据支持
-                //另一种方法：通过jquery converters对数据进行修改，尚未尝试
-                "success" : function(items) {
-                      data = [];
-                      for( k in items ){
-                        var item = items[k];
-                        console.log("node:"+JSON.stringify(item));
-                        node = {
-                            "id" :  item.id,
-                            "parent":item.pId=="1"?"#":item.pId,
-                            "text":item.name,
-                            "children":true,
-                            "state" : {"closed":true}//important: to show collapsed button always
-                        }
-                        data.push( node );
-                      }
-                      console.log("nodes"+JSON.stringify(data));
-                      return data; 
                 }
-                //**/
              },
           },
       }); 
-      //分类树变化事件：
+    //分类树变化事件：
     $('#categoryTree').on("changed.jstree", function (e, data) {
         //TODO：更新当前选中的字段
         if(data.node.original.type==="category"){//仅在节点为Category时才切换
@@ -258,7 +245,20 @@ function showContent(item){
         }else{
             console.log("Measure:"+JSON.stringify(data.node.original));
         }
-    });        
+    });  
+    //**/  
+
+    //加载类目
+    loadCategories();//显示类目选择器
+
+    //显示标签列表，如果为空则用默认tags
+    /**
+    var tags = stuff.tags?stuff.tags:[];
+    if(stuff.tagging && stuff.tagging.trim().length>0)
+        tags = stuff.tagging.trim().split(" ")
+    showTagging(tags);     
+    //**/ 
+
     //随机着色
     /*
     $("#tags").find("div").each(function(){
@@ -501,7 +501,8 @@ function loadHosts(itemId){//获取推荐者列表，可能有多个
     })
 }
 
-function loadCategories(currentCategory){
+//加载顶部导航栏
+function loadNavigationCategories(currentCategory){
     $.ajax({
         url:"https://data.shouxinjk.net/_db/sea/category/categories",
         type:"get",
@@ -520,5 +521,227 @@ function loadCategories(currentCategory){
             })
         }
     })    
+}
+
+//加载类目数据，加载完成后显示级联选择器
+function loadCategories(){
+    $.ajax({
+        url:"https://data.shouxinjk.net/ilife/a/mod/itemCategory/all-categories?parentId=1",
+        type:"get",
+        success:function(res){
+            //装载categories
+            if(_sxdebug)console.log("got all categories",res);
+            categories = res;  
+            //显示级联选择
+            showCascader(stuff.meta?stuff.meta.category:null);
+        }
+    })    
+}
+
+//显示级联选择器
+function showCascader(categoryId){
+    cascader = new eo_cascader(categories, {
+        elementID: 'category-wrap',
+        multiple: false, // 是否多选
+        // 非编辑页，checkedValue 传入 null
+        // 编辑时 checkedValue 传入最后一级的 ID 即可
+        checkedValue: categoryId?[categoryId] : null,
+        separator: '/', // 分割符 山西-太原-小店区 || 山西/太原/小店区
+        clearable: false, // 是否可一键删除已选
+        onSelect:function(selectedCategory){//回调函数，参数带有选中标签的ID和label。回传为：{id:[],label:[]}//其中id为最末级选中节点，label为所有层级标签
+            if(_sxdebug)console.log("crawler::category item selected.",selectedCategory);
+            //更新当前item的category。注意更新到meta.category下
+            stuff.meta = {category:selectedCategory.id[0]};//仅保存叶子节点
+            //加载属性值列表
+            loadProps(selectedCategory.id[0]);
+        }
+    });
+    //对于已经设置的类目则直接显示属性列表
+    if(stuff.meta && stuff.meta.category)
+        loadProps(stuff.meta.category);
+}
+
+
+//根据ItemCategory类别，获取对应的属性配置，并与数据值融合显示
+//1，根据key进行合并显示，以itemCategory下的属性为主，能够对应上的key显示绿色，否则显示红色
+//2，数据显示，有对应于key的数值则直接显示，否则留空等待填写
+function loadProps(categoryId){
+    //根据categoryId获取所有measure清单，字段包括name、property
+    $.ajax({
+        url:"https://data.shouxinjk.net/ilife/a/mod/measure/measures?category="+categoryId,
+        type:"get",
+        data:{},
+        success:function(items){
+            if(_sxdebug)console.log(items);
+            //在回调内：1，根据返回结果组装待展示数据，字段包括：name、property、value、flag(如果在则为0，不在为1)
+            var props = stuff.props?stuff.props:[];//临时记录当前stuff的属性列表
+              nodes = [];
+              for( k in items ){
+                var item = items[k];
+                if(_sxdebug)console.log("measure:"+JSON.stringify(item));
+                var name=item.name;
+                var property = item.property;
+                var value = props[property]?props[property]:"";
+                for(j in props){
+                    var prop = props[j];
+                    var _key = "";
+                    for ( var key in prop){//从prop内获取key
+                        _key = key;
+                        break;
+                    }  
+                    if(_key===property){//如果存在对应property：这是理想情况，多数情况下都只能通过name匹配
+                        value = prop[_key];
+                        props.splice(j, 1);//删除该元素
+                        break;
+                    }else if(_key===name){//如果匹配上name 也进行同样的处理
+                        value = prop[_key];
+                        props.splice(j, 1);//删除该元素
+                        break;
+                    }
+                }
+                var node = {
+                    "name" :  name,
+                    "property":property,
+                    "value":value,
+                    //"flag":true
+                }
+                nodes.push( node );
+              }
+              //添加未出现的property
+                for(j in props){
+                    var prop = props[j];
+                    if(_sxdebug)console.log("un matched prop:"+JSON.stringify(prop));
+                    var property="";
+                    var value = "";
+                    for (var key in prop){
+                        property = key;
+                        value = prop[key];
+                        break;
+                    }                   
+                    var node = {
+                        "name" :  property,//属性名直接作为显示名称
+                        "property":property,
+                        "value":value,
+                        //"flag":false
+                    }
+                    nodes.push( node );
+                }
+              if(_sxdebug)console.log("prop Nodes:"+JSON.stringify(nodes));
+              //return data;            
+            //在回调内：2，组装并显示数据表格
+            $("#propsList").jsGrid({
+                width: "100%",
+                //height: "400px",
+         
+                inserting: false,
+                editing: true,
+                sorting: false,
+                paging: false,
+                onItemInserted:function(row){
+                    if(_sxdebug)console.log("item inserted",row);
+                    //更新到当前修改item属性列表内
+                    if(!stuff.props)
+                        stuff.props = [];
+                    //由于采用的是键值对，需要进行遍历。考虑到浏览器影响，此处未采用ES6 Map对象
+                    var props = [];//新建一个数组
+                    var prop = {};
+                    prop[row.item.name] = row.item.value;//直接更新对应属性数值：注意，此处采用name更新，与页面采集器保持一致  
+                    props.push(prop);
+                    stuff.props.forEach((item, index) => {//将其他元素加入
+                      if(_sxdebug)console.log("foreach props.[index]"+index,item);
+                      if(!item[row.item.name])
+                        props.push(item);
+                    });
+                    stuff.props = props;
+                    if(_sxdebug)console.log("item props updated",stuff);                 
+                },
+                onItemUpdated:function(row){
+                    if(_sxdebug)console.log("item updated",row);
+                    if(!stuff.props)
+                        stuff.props = [];                    
+                    //由于采用的是键值对，需要进行遍历。考虑到浏览器影响，此处未采用ES6 Map对象
+                    var props = [];//新建一个数组
+                    var prop = {};
+                    prop[row.item.name] = row.item.value;//直接更新对应属性数值：注意，此处采用name更新，与页面采集器保持一致  
+                    props.push(prop);
+                    console.log("stuff props.[json]"+JSON.stringify(stuff.props),stuff.props);
+                    stuff.props.forEach((item, index) => {//将其他元素加入
+                      if(_sxdebug)console.log("foreach props.[index]"+index,item);
+                      if(!item[row.item.name])
+                        props.push(item);                      
+                    });
+                    stuff.props = props; 
+                    if(_sxdebug)console.log("item props updated",stuff);   
+                },
+
+                data: nodes,
+         
+                fields: [
+                    {title:"名称", name: "name", type: "text", width: 100 },
+                    //{title:"属性", name: "property", type: "text", width: 50 },
+                    {title:"数值", name: "value", type: "text",width:200},
+                    //{ name: "Matched", type: "checkbox", title: "Is Matched", sorting: false },
+                    { type: "control" ,editButton: true,deleteButton: false,   width: 50}
+                ]
+            });   
+            //显示属性列表
+            $("#propsDiv").css("display","block");         
+        }
+    })     
+}
+
+
+//显示tag编辑框
+function showTagging(tags){
+    var moreTags = tags;
+    //**
+    for(var i=0;i<moreTags.length;i++){
+        if(moreTags[i].trim().length>0)
+            $('#tagging').append("<li>"+moreTags[i]+"</li>");
+    }
+
+    var eventTags = $('#tagging');
+
+    var addEvent = function(text) {
+        if(_sxdebug)console.log(text);
+        //$('#events_container').append(text + '<br>');
+    };
+
+    eventTags.tagit({
+        availableTags: moreTags,//TODO: 可以获取所有标签用于自动补全
+        //**
+        beforeTagAdded: function(evt, ui) {
+            if (!ui.duringInitialization) {
+                addEvent('beforeTagAdded: ' + eventTags.tagit('tagLabel', ui.tag));
+            }
+        },//**/
+        afterTagAdded: function(evt, ui) {
+            if (!ui.duringInitialization) {
+                if(!stuff.tagging)
+                    stuff.tagging = "";
+                stuff.tagging += " "+eventTags.tagit('tagLabel', ui.tag);
+                //stuff.tagging.push(eventTags.tagit('tagLabel', ui.tag));
+                addEvent('afterTagAdded: ' + eventTags.tagit('tagLabel', ui.tag));
+            }
+        },
+        //**
+        beforeTagRemoved: function(evt, ui) {
+            addEvent('beforeTagRemoved: ' + eventTags.tagit('tagLabel', ui.tag));
+        },//**/
+        afterTagRemoved: function(evt, ui) {
+            if(!stuff.tagging)
+                stuff.tagging = "";
+            stuff.tagging = stuff.tagging.replace(eventTags.tagit('tagLabel', ui.tag),"").trim();
+            addEvent('afterTagRemoved: ' + eventTags.tagit('tagLabel', ui.tag));
+        },
+        /**
+        onTagClicked: function(evt, ui) {
+            addEvent('onTagClicked: ' + eventTags.tagit('tagLabel', ui.tag));
+        },//**/
+        onTagExists: function(evt, ui) {
+            addEvent('onTagExists: ' + eventTags.tagit('tagLabel', ui.existingTag));
+        }
+    });   
+
 }
 
