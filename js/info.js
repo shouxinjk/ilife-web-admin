@@ -10,7 +10,7 @@ $(document).ready(function ()
     rootFontSize = rootFontSize <8 ? 8:rootFontSize;//最小为8px
     oHtml.style.fontSize = rootFontSize+ "px";
     //设置正文部分宽度
-    var bodyWidth = 960*width/1440; //1440分辨率下显示960宽度
+    var bodyWidth = width*0.9;//960*width/1440; //1440分辨率下显示960宽度
     $("#body").width(bodyWidth);
     galleryWidth = bodyWidth*0.7;//占比70%，960下宽度为672
     galleryHeight = 9*galleryWidth/16;//宽高比为16:9
@@ -277,111 +277,6 @@ function showContent(item){
     //广告
     //TODO
 }
-
-//根据ItemCategory类别，获取对应的属性配置，并与数据值融合显示
-//1，根据key进行合并显示，以itemCategory下的属性为主，能够对应上的key显示绿色，否则显示红色
-//2，数据显示，有对应于key的数值则直接显示，否则留空等待填写
-/**
-function loadProps(categoryId){
-    //根据categoryId获取所有measure清单，字段包括name、property
-    $.ajax({
-        url:"http://www.shouxinjk.net/ilife/a/mod/measure/measures?category="+categoryId,
-        type:"get",
-        data:{},
-        success:function(items){
-            console.log(items);
-            //在回调内：1，根据返回结果组装待展示数据，字段包括：name、property、value、flag(如果在则为0，不在为1)
-            var props = [];
-            console.log("props:"+JSON.stringify(stuff.props),stuff.props);
-            if(Array.isArray(stuff.props)){//兼容以数组形式存储的props：来源于客户端爬虫
-                props = stuff.props;//临时记录当前stuff的属性列表
-            }else{//兼容{key:value,key:value}对象：来源于服务器端API采集数据
-                for(var key in stuff.props){
-                    console.log(key+":"+stuff.props[key]);//json对象中属性的名字：对象中属性的值
-                    var prop = {};
-                    prop[key]=stuff.props[key];
-                    props.push(prop);
-                }
-            }
-                
-              nodes = [];
-              for( k in items ){
-                var item = items[k];
-                console.log("measure:"+JSON.stringify(item));
-                var name=item.name;
-                var property = item.property;
-                var value = props[property]?props[property]:"";
-                for(j in props){
-                    var prop = props[j];
-                    var _key = "";
-                    for ( var key in prop){//从prop内获取key
-                        _key = key;
-                        break;
-                    }  
-                    if(_key===property){//如果存在对应property：这是理想情况，多数情况下都只能通过name匹配
-                        value = prop[_key];
-                        props.splice(j, 1);//删除该元素
-                        break;
-                    }else if(_key===name){//如果匹配上name 也进行同样的处理
-                        value = prop[_key];
-                        props.splice(j, 1);//删除该元素
-                        break;
-                    }
-                }
-                var node = {
-                    "name" :  name,
-                    "property":property,
-                    "value":value,
-                    //"flag":true
-                }
-                nodes.push( node );
-              }
-              //添加未出现的property
-                for(j in props){
-                    var prop = props[j];
-                    console.log("un matched prop:"+JSON.stringify(prop));
-                    var property="";
-                    var value = "";
-                    for (var key in prop){
-                        property = key;
-                        value = prop[key];
-                        break;
-                    }                   
-                    var node = {
-                        "name" :  "",
-                        "property":property,
-                        "value":value,
-                        //"flag":false
-                    }
-                    nodes.push( node );
-                }
-              console.log("prop Nodes:"+JSON.stringify(nodes));
-              //return data;            
-            //在回调内：2，组装并显示数据表格
-            $("#propsList").jsGrid({
-                width: "100%",
-                //height: "400px",
-         
-                inserting: true,
-                editing: true,
-                sorting: false,
-                paging: false,
-         
-                data: nodes,
-         
-                fields: [
-                    {title:"名称", name: "name", type: "text", width: 50 },
-                    {title:"属性", name: "property", type: "text", width: 50 },
-                    {title:"数值", name: "value", type: "text",width:50},
-                    //{ name: "Matched", type: "checkbox", title: "Is Matched", sorting: false },
-                    { type: "control" }
-                ]
-            });            
-        }
-    })     
-
-}
-//**/
 
 /**
 根据地址解析得到经纬度
