@@ -281,6 +281,7 @@ function showContent(item){
 //根据ItemCategory类别，获取对应的属性配置，并与数据值融合显示
 //1，根据key进行合并显示，以itemCategory下的属性为主，能够对应上的key显示绿色，否则显示红色
 //2，数据显示，有对应于key的数值则直接显示，否则留空等待填写
+/**
 function loadProps(categoryId){
     //根据categoryId获取所有measure清单，字段包括name、property
     $.ajax({
@@ -290,7 +291,19 @@ function loadProps(categoryId){
         success:function(items){
             console.log(items);
             //在回调内：1，根据返回结果组装待展示数据，字段包括：name、property、value、flag(如果在则为0，不在为1)
-            var props = stuff.props;//临时记录当前stuff的属性列表
+            var props = [];
+            console.log("props:"+JSON.stringify(stuff.props),stuff.props);
+            if(Array.isArray(stuff.props)){//兼容以数组形式存储的props：来源于客户端爬虫
+                props = stuff.props;//临时记录当前stuff的属性列表
+            }else{//兼容{key:value,key:value}对象：来源于服务器端API采集数据
+                for(var key in stuff.props){
+                    console.log(key+":"+stuff.props[key]);//json对象中属性的名字：对象中属性的值
+                    var prop = {};
+                    prop[key]=stuff.props[key];
+                    props.push(prop);
+                }
+            }
+                
               nodes = [];
               for( k in items ){
                 var item = items[k];
@@ -368,6 +381,7 @@ function loadProps(categoryId){
     })     
 
 }
+//**/
 
 /**
 根据地址解析得到经纬度
@@ -580,7 +594,20 @@ function loadProps(categoryId){
         success:function(items){
             if(_sxdebug)console.log(items);
             //在回调内：1，根据返回结果组装待展示数据，字段包括：name、property、value、flag(如果在则为0，不在为1)
-            var props = stuff.props?stuff.props:[];//临时记录当前stuff的属性列表
+            //var props = stuff.props?stuff.props:[];//临时记录当前stuff的属性列表
+            var props = [];
+            console.log("props:"+JSON.stringify(stuff.props),stuff.props);
+            if(Array.isArray(stuff.props)){//兼容以数组形式存储的props：来源于客户端爬虫
+                props = stuff.props;//临时记录当前stuff的属性列表
+            }else{//兼容{key:value,key:value}对象：来源于服务器端API采集数据
+                for(var key in stuff.props){
+                    console.log(key+":"+stuff.props[key]);//json对象中属性的名字：对象中属性的值
+                    var prop = {};
+                    prop[key]=stuff.props[key];
+                    props.push(prop);
+                }
+            }
+
               nodes = [];
               for( k in items ){
                 var item = items[k];
@@ -653,11 +680,22 @@ function loadProps(categoryId){
                     var prop = {};
                     prop[row.item.name] = row.item.value;//直接更新对应属性数值：注意，此处采用name更新，与页面采集器保持一致  
                     props.push(prop);
-                    stuff.props.forEach((item, index) => {//将其他元素加入
-                      if(_sxdebug)console.log("foreach props.[index]"+index,item);
-                      if(!item[row.item.name])
-                        props.push(item);
-                    });
+                    if(Array.isArray(stuff.props)){//兼容以数组形式存储的props：来源于客户端爬虫
+                        stuff.props.forEach((item, index) => {//将其他元素加入
+                          if(_sxdebug)console.log("foreach props.[index]"+index,item);
+                          if(!item[row.item.name])
+                            props.push(item);
+                        });
+                    }else{
+                        for(var key in stuff.props){
+                            console.log(key+":"+stuff.props[key]);//json对象中属性的名字：对象中属性的值
+                            if(key!=row.item.name){
+                                var prop = {};
+                                prop[key]=stuff.props[key];
+                                props.push(prop);
+                            }
+                        }                        
+                    }
                     stuff.props = props;
                     if(_sxdebug)console.log("item props updated",stuff);                 
                 },
@@ -671,11 +709,22 @@ function loadProps(categoryId){
                     prop[row.item.name] = row.item.value;//直接更新对应属性数值：注意，此处采用name更新，与页面采集器保持一致  
                     props.push(prop);
                     console.log("stuff props.[json]"+JSON.stringify(stuff.props),stuff.props);
-                    stuff.props.forEach((item, index) => {//将其他元素加入
-                      if(_sxdebug)console.log("foreach props.[index]"+index,item);
-                      if(!item[row.item.name])
-                        props.push(item);                      
-                    });
+                    if(Array.isArray(stuff.props)){//兼容以数组形式存储的props：来源于客户端爬虫
+                        stuff.props.forEach((item, index) => {//将其他元素加入
+                          if(_sxdebug)console.log("foreach props.[index]"+index,item);
+                          if(!item[row.item.name])
+                            props.push(item);
+                        });
+                    }else{
+                        for(var key in stuff.props){
+                            console.log(key+":"+stuff.props[key]);//json对象中属性的名字：对象中属性的值
+                            if(key!=row.item.name){
+                                var prop = {};
+                                prop[key]=stuff.props[key];
+                                props.push(prop);
+                            }
+                        }                        
+                    }
                     stuff.props = props; 
                     if(_sxdebug)console.log("item props updated",stuff);   
                 },
