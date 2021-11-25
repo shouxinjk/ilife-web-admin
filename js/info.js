@@ -150,6 +150,12 @@ function showContent(item){
             stuff.task.status = "indexed";
             stuff.status.load = "pending";//提交后需要重新分析
             stuff.status.index = "pending";//提交后需要重新索引
+
+            //先更新数据
+            bactchUpdateStuffCategory(stuff);//根据当前设置批量修改其他同类目stuff
+            bactchUpdatePlatformCategories(stuff);//根据当前设置批量修改其他同类目platform_categories
+
+            //然后索引
             console.log("now start commit index.",stuff);
             index(stuff);
         }else{
@@ -309,9 +315,67 @@ function index(item){//记录日志
                 showHideTransition: 'fade',
                 icon: 'success'
             });
-            window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
+            goNextItem();
         }
     })            
+}
+
+var pendingCount=3;//等待最后一个异步调用返回才跳转
+function goNextItem(){
+    pendingCount--
+    console.log("pending jump to next page. pending requests = ",pendingCount);
+    if(pendingCount < 1)
+        window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
+}
+
+
+//批量修改my_stuff
+//将my_stuff中classify=pending,且source、category与当前stuff相同的同时修改
+function bactchUpdateStuffCategory(item){
+    var data = {
+        source:item.source,
+        category:item.category,
+        mappingId:item.meta.category
+    };
+    if(_sxdebug)console.log("try to mapping stuff category.",data);
+    $.ajax({
+        url:"https://data.shouxinjk.net/_db/sea/my/stuff/mapping/category",
+        type:"patch",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/json",
+            "Accept":"application/json"
+        },
+        success:function(result){
+            console.log("stuff category mapping done.",result);
+            goNextItem();
+        }
+    });
+}
+
+//批量修改my_stuff及platform_categories
+//更新platform_categories中的设置条目：注意：由于my_stuff内无cid，不能采用insert方式，只用更新方式。另外，如果已经设置，则以此处更新优先
+function bactchUpdatePlatformCategories(item){
+    var data = {
+        source:item.source,
+        name:item.category,
+        mappingId:item.meta.category,
+        mappingName:item.meta.categoryName //采用meta.categoryName缓存标准类目名称
+    };
+    if(_sxdebug)console.log("try to mapping platform_categories.",data);
+    $.ajax({
+        url:"https://data.shouxinjk.net/_db/sea/category/platform_categories/mapping",
+        type:"patch",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/json",
+            "Accept":"application/json"
+        },
+        success:function(result){
+            if(_sxdebug)console.log("platform category mapping done.",result);
+            goNextItem();
+        }
+    });
 }
 
 //点击跳转到原始链接
@@ -440,7 +504,7 @@ function showCascader(categoryId){
         onSelect:function(selectedCategory){//回调函数，参数带有选中标签的ID和label。回传为：{id:[],label:[]}//其中id为最末级选中节点，label为所有层级标签
             if(_sxdebug)console.log("crawler::category item selected.",selectedCategory);
             //更新当前item的category。注意更新到meta.category下
-            stuff.meta = {category:selectedCategory.id[0]};//仅保存叶子节点
+            stuff.meta = {category:selectedCategory.id[0],categoryName:selectedCategory.label[0]};//仅保存叶子节点
             stuff.status.classify = "ready";//更新classify状态classify
             stuff.timestamp.classify = new Date();//更新classify时间戳
             //加载属性值列表
