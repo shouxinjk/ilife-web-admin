@@ -21,14 +21,18 @@ $(document).ready(function ()
     var id = args["id"];//当前内容
     showAllItems = args["showAllItems"]?true:false;//传入该参数表示需要index页面显示全部内容
     //判断屏幕大小，如果是小屏则跳转
+    /**
     if(width<800){
         window.location.href=window.location.href.replace(/info.html/g,"info2.html");
     }
+    //**/
 
     //加载地图
+    /**
     map = new BMap.Map("allmap");
     var point = new BMap.Point(104.069376,30.574828);
     map.centerAndZoom(point,12); 
+    //**/
 
     //加载导航和内容
     loadNavigationCategories(category);
@@ -139,18 +143,19 @@ function showContent(item){
         var tagging = $("#tagging").val()?$("#tagging").val():"";
         var web2link = $("#web2link").val()?$("#web2link").val():"";
         var wap2link = $("#wap2link").val()?$("#wap2link").val():"";
-        if(tagging.trim().length>0 && ((web2link.trim().length>0 && wap2link.trim().length>0) || item.link.qrcode)) {
-            item.tagging = tagging;
-            item.link.web2 = web2link;
-            item.link.wap2 = wap2link;
-            item.task.status = "indexed";
-            item.status = "pending";//提交后需要重新分析
-            console.log("now start commit index.",item);
-            index(item);
+        if(stuff.meta && stuff.meta.category && tagging.trim().length>0 && ((web2link.trim().length>0 && wap2link.trim().length>0) || item.link.qrcode)) {
+            stuff.tagging = tagging;
+            stuff.link.web2 = web2link;
+            stuff.link.wap2 = wap2link;
+            stuff.task.status = "indexed";
+            stuff.status.load = "pending";//提交后需要重新分析
+            stuff.status.index = "pending";//提交后需要重新索引
+            console.log("now start commit index.",stuff);
+            index(stuff);
         }else{
             $.toast({
                 heading: 'Error',
-                text: '标注和推广链接不能为空',
+                text: '类目、推荐语和推广链接不能为空',
                 showHideTransition: 'fade',
                 icon: 'error'
             })
@@ -158,8 +163,10 @@ function showContent(item){
     }); 
     //删除按钮：点击后更改状态：inactive
     $("#cancelbtn").click(function(){
-        item.status = "inactive";
-        index(item);
+        stuff.status.inactive = "inactive";
+        stuff.status.index = "pending";//提交后需要重新索引
+        stuff.timestamp.inactive = new Date();//更新时间戳
+        index(stuff);
     });     
     //手工标注
     $("#tagging").val(item.tagging?item.tagging:"");  
@@ -169,18 +176,8 @@ function showContent(item){
     //标题
     $("#title").html(item.title);
     $("#wap2link").val(item.link.wap2?item.link.wap2:item.link.wap);  
-    //分类
-    /**
-    $("#category").val((item.category?item.category:"-")+":"+(item.categoryId?item.categoryId:"-"));
-    $("#changeCategoryBtn").click(//更改所属分类
-        function(){
-            $("#category").val((itemCategoryNew.category?itemCategoryNew.category:"-")+":"+(itemCategoryNew.categoryId?itemCategoryNew.categoryId:"-"));//更改显示内容；
-            //获取属性列表并更新
-            loadProps(itemCategoryNew.categoryId);
-        }
-    ); 
-    //**/
     //地址
+    /**
     $("#changeAddressBtn").click(//修改地址
         function(){
             var addr = $("#address").val();
@@ -203,7 +200,8 @@ function showContent(item){
         function(){
             console.log("待提交属性值：",nodes);
         }
-    );     
+    );   
+    //**/  
     //评分
     if(item.rank && item.rank.score){
         $("#score .comment").append("<div class='label'>评价</div><div class='rank'>"+item.rank.score+"/<span class='base'>"+item.rank.base+"</span></div>");
@@ -228,31 +226,7 @@ function showContent(item){
     }
     for(var i=0;item.tags && i<item.tags.length;i++){
         $("#tags").append("<div class='tag'>" + item.tags[i] + "</div>");
-    }
-    //获取分类树
-    /**
-    $("#categoryTree").jstree({
-          "core" : {
-            "data" : {
-                "url":"http://www.shouxinjk.net/ilife/a/mod/itemCategory/categoriesAndMeasures",
-                "data":function(node){
-                  return { parentId : node.id==='#'?'1':node.id};
-                }
-             },
-          },
-      }); 
-    //分类树变化事件：
-    $('#categoryTree').on("changed.jstree", function (e, data) {
-        //TODO：更新当前选中的字段
-        if(data.node.original.type==="category"){//仅在节点为Category时才切换
-            console.log("Category:"+JSON.stringify(data.node.original));
-            itemCategoryNew.category = data.node.text;
-            itemCategoryNew.categoryId = data.node.id;
-        }else{
-            console.log("Measure:"+JSON.stringify(data.node.original));
-        }
-    });  
-    //**/  
+    } 
 
     //加载类目
     loadCategories();//显示类目选择器
@@ -335,7 +309,7 @@ function index(item){//记录日志
                 showHideTransition: 'fade',
                 icon: 'success'
             });
-            window.location.href="index.html"+(showAllItems?"?showAllItems=true":"");
+            window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
         }
     })            
 }
@@ -467,6 +441,8 @@ function showCascader(categoryId){
             if(_sxdebug)console.log("crawler::category item selected.",selectedCategory);
             //更新当前item的category。注意更新到meta.category下
             stuff.meta = {category:selectedCategory.id[0]};//仅保存叶子节点
+            stuff.status.classify = "ready";//更新classify状态classify
+            stuff.timestamp.classify = new Date();//更新classify时间戳
             //加载属性值列表
             loadProps(selectedCategory.id[0]);
         }
