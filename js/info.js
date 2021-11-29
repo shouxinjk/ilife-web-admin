@@ -152,8 +152,8 @@ function showContent(item){
             stuff.status.index = "pending";//提交后需要重新索引
 
             //先更新数据
-            bactchUpdateStuffCategory(stuff);//根据当前设置批量修改其他同类目stuff
-            bactchUpdatePlatformCategories(stuff);//根据当前设置批量修改其他同类目platform_categories
+            batchUpdateStuffCategory(stuff);//根据当前设置批量修改其他同类目stuff
+            batchUpdatePlatformCategories(stuff);//根据当前设置批量修改其他同类目platform_categories
 
             //然后索引
             console.log("now start commit index.",stuff);
@@ -324,14 +324,14 @@ var pendingCount=3;//等待最后一个异步调用返回才跳转
 function goNextItem(){
     pendingCount--
     console.log("pending jump to next page. pending requests = ",pendingCount);
-    if(pendingCount < 1)
+    if(pendingCount < 2)//更新stuff较慢，不等待，直接跳转
         window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
 }
 
 
 //批量修改my_stuff
 //将my_stuff中classify=pending,且source、category与当前stuff相同的同时修改
-function bactchUpdateStuffCategory(item){
+function batchUpdateStuffCategory(item){
     var data = {
         source:item.source,
         category:item.category,
@@ -355,7 +355,8 @@ function bactchUpdateStuffCategory(item){
 
 //批量修改my_stuff及platform_categories
 //更新platform_categories中的设置条目：注意：由于my_stuff内无cid，不能采用insert方式，只用更新方式。另外，如果已经设置，则以此处更新优先
-function bactchUpdatePlatformCategories(item){
+/**
+function batchUpdatePlatformCategories(item){
     var data = {
         source:item.source,
         name:item.category,
@@ -376,6 +377,44 @@ function bactchUpdatePlatformCategories(item){
             goNextItem();
         }
     });
+}
+//**/
+function batchUpdatePlatformCategories(item){
+    var name = "";
+    var names = [];
+    if(Array.isArray(item.category)){
+        name = item.category[item.category.length-1];
+        names = item.category;
+    }else if(item.category){
+        var array = item.category.split(" ");
+        name = array[array.length-1];
+        names = array;
+    }
+    var platform_category = {
+        _key:hex_md5(item.source+item.category),
+        source:item.source,
+        name:name,
+        names:names,
+        mappingId:item.meta.category,
+        mappingName:item.meta.categoryName
+    };
+    console.log("try to commit platform category.",platform_category);
+    $.ajax({
+        url:"https://data.shouxinjk.net/_db/sea/category/platform_categories",
+        type:"post",
+        data:JSON.stringify(platform_category),//注意：不能使用JSON对象
+        //data:data,
+        headers:{
+            "Content-Type":"application/json",
+            "Accept": "application/json"
+        },
+        success:function(res){
+            console.log("upsert success.",res);
+        },
+        error:function(){
+            console.log("upsert failed.",platform_category);
+        }
+    }); 
 }
 
 //点击跳转到原始链接

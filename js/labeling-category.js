@@ -123,7 +123,7 @@ function loadPlatforms(currentPlatform){
                 var key = $(this).attr("data");
                 var rootNode = $(this).attr("rootNode");
                 //跳转到首页
-                window.location.href = "labeling-category.html?source="+key+"&sourceRoot="+rootNode;
+                window.location.href = "labeling-category.html?source="+key+"&sourceRoot="+rootNode+(hideHeaderBar?"&hideHeaderBar=true":"");
             })
         }
     })    
