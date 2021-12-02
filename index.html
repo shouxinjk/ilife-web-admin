@@ -21,21 +21,34 @@
 <body>
     <div class="header">
         <div class="search">
-            <span>MAN生活</span>
-            <input placeholder=" 小确幸,大生活"/>
-            <span id="tipText">仅显示待入库商品，可以使用showAllItems参数控制</span>
-        </div>
+            <span style="margin-left:-10px">&nbsp;</span>
+            <input id="searchTxt" placeholder="🔍 Life is all about having a good time"><a id="findAll" class="searchBtn">搜索</a><!--a id="findByDistance" data="Distance" class="searchBtn">附近</a--><a id="findByPrice" data="Price" class="searchBtn">好价</a><a id="findByRank" data="Rank" class="searchBtn">好物</a><a id="findByProfit" data="Profit" class="searchBtn">高佣</a>        
+        </div>       
     </div>
 
-
+    <!--自定义分类-->
     <div class="nav">
-        <ul class="navUl">
+        <ul class="navUl" id="categoryNav">
+        </ul>
+    </div>  
+
+    <!--电商平台列表-->
+    <div class="nav">
+        <ul class="navUl" id="platformNav">
         </ul>
     </div>   
 
     <div id="Center">
         <ul id="waterfall"></ul>
     </div>
+
+    <div id="footer" class="footer">
+        <button class="btn btn-default findMoreBtn-hide" id="findMoreBtn">搜索更多</button>
+    </div>   
+
+    <div id="footer-placeholder" style="line-height: 60px">&nbsp;&nbsp;</div> 
+
+
 </body>
 
 <!--script src="https://code.jquery.com/jquery-1.12.4.min.js"></script-->
