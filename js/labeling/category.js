@@ -123,7 +123,7 @@ function loadPlatforms(currentPlatform){
                 var key = $(this).attr("data");
                 var rootNode = $(this).attr("rootNode");
                 //跳转到首页
-                window.location.href = "labeling-category.html?source="+key+"&sourceRoot="+rootNode+(hideHeaderBar?"&hideHeaderBar=true":"");
+                window.location.href = "category.html?source="+key+"&sourceRoot="+rootNode+(hideHeaderBar?"&hideHeaderBar=true":"");
             })
         }
     })    
@@ -139,7 +139,7 @@ function mappingCategory(itemKey,platformCategoryId,platformCategoryName,standar
         mappingName:standardCategoryName
     };
     $.ajax({
-        url:"https://data.shouxinjk.net/_db/sea/labeling/category/platform_categories/fullpath/"+itemKey,
+        url:"https://data.shouxinjk.net/_db/sea/category/platform_categories/fullpath/"+itemKey,
         type:"patch",
         data:JSON.stringify(data),//注意：不能使用JSON对象
         headers:{
