@@ -18,6 +18,7 @@ $(document).ready(function ()
         delay: 100,
     });
     category = args["category"]?args["category"]:0; //如果是跳转，需要获取当前目录
+    classify = args["classify"]?args["classify"]:'pending'; //如果指定标准类目，则根据标准类目过滤
     loadCategories(category);
     loadPlatforms(source);//加载电商平台列表
 
@@ -61,6 +62,7 @@ var filter = "";//通过filter区分好价、好物、附近等不同查询组�
 var categoryTagging = "";//记录目录切换标签，tagging = categoryTagging + currentPersonTagging
 
 var source="all";//记录电商平台切换标签
+var classify = "pending";//标志是否已经入库，如果为pending则为待入库，否则接收前端传入的标准类目ID
 
 var hasMore = false;
 var cursorId = null;
@@ -138,6 +140,50 @@ function buildPlatformQuery(keyword){
     //**/
     //返回组织好的bool查询
     return q;
+}
+
+//将标准类目信息加入MUST查询 classify
+function buildClassifyQuery(complexQuery){
+    //如果传入标准类目则根据：status.classify = ready && meta.category = 标准类目
+    if(classify!='pending'){
+        console.log("build query by classify=ready.",classify);
+        /**
+        var classifyStatusReadyQuery = {
+            "nested": {
+                "path": "status",
+                "query": {
+                    "match": {
+                        "status.classify": "ready"
+                    }
+                }
+            }
+        }; 
+        complexQuery.query.bool.filter.push(classifyStatusReadyQuery);//根据classify状态过滤     
+        //**/
+        var metaCategoryQuery = {
+            "nested": {
+                "path": "meta",
+                "query": {
+                    "match": {
+                        "meta.category": classify
+                    }
+                }
+            }
+        }; 
+        complexQuery.query.bool.filter.push(metaCategoryQuery);//根据类目过滤
+    }else{//默认情况直接查询待入库条目：status.classify = pending
+        var classifyStatusPendingQuery = {
+            "nested": {
+                "path": "status",
+                "query": {
+                    "match": {
+                        "status.classify": "pending"
+                    }
+                }
+            }
+        }          
+        complexQuery.query.bool.filter.push(classifyStatusPendingQuery);//根据classify状态过滤
+    }
 }
 
 
@@ -252,6 +298,11 @@ function buildEsQuery(){
     if(source && source.trim().length > 0 && source.trim()!='all'){//根据平台过滤
         complexQuery.query.bool.must.push(buildPlatformQuery(source));
     }    
+
+    buildClassifyQuery(complexQuery);//根据类目过滤：直接操作complexQuery
+
+    console.log("es complexQuery",JSON.stringify(complexQuery));
+    
     //TODO：添加must_not
     /*
     if(userInfo.tagging && userInfo.tagging.must_not){
