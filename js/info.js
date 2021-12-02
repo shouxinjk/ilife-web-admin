@@ -331,6 +331,7 @@ function goNextItem(){
 
 //批量修改my_stuff
 //将my_stuff中classify=pending,且source、category与当前stuff相同的同时修改
+//TODO : 太耗时。需要调整为异步处理
 function batchUpdateStuffCategory(item){
     var data = {
         source:item.source,
@@ -410,6 +411,7 @@ function batchUpdatePlatformCategories(item){
         },
         success:function(res){
             console.log("upsert success.",res);
+            goNextItem();
         },
         error:function(){
             console.log("upsert failed.",platform_category);
