@@ -33,6 +33,15 @@ input{border:1px solid silver;}
   vertical-align: bottom;
 }
 
+.sxlabel{
+  font-weight:normal;
+  font-size:14px;
+}
+
+label{
+  font-weight:normal;
+}
+
 .sxform{
   width:100%;
   display:flex;
@@ -54,6 +63,8 @@ input{border:1px solid silver;}
 .checkbox>label{
   margin-top:1px;
   margin-left:3px;
+  font-size:12px;
+  font-weight:normal;
 }
 
 .searchBtn{
@@ -62,7 +73,7 @@ input{border:1px solid silver;}
   border-radius: 5px;
   border-color:darkgreen;
   color:darkgreen;
-  font-size:12px;
+  font-size:14px;
   font-weight:bold;
 }
 
@@ -77,6 +88,7 @@ input{border:1px solid silver;}
 
 .sxColumn{
   font-size:14px;
+  font-weight:normal;
   word-wrap:break-word; 
   word-break:break-all;  
   white-space: nowrap;
