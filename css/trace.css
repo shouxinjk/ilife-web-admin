@@ -40,6 +40,7 @@ input{border:1px solid silver;}
 
 label{
   font-weight:normal;
+  font-size:12px;
 }
 
 .sxform{
@@ -73,7 +74,7 @@ label{
   border-radius: 5px;
   border-color:darkgreen;
   color:darkgreen;
-  font-size:14px;
+  font-size:12px;
   font-weight:bold;
 }
 
