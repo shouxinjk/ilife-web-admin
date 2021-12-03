@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>上色生活 - 小确幸大生活</title>
+    <link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+    <meta charset="utf-8" name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes" />
+    <link rel="stylesheet" type="text/css" href="../css/reset2.0.min.css">
+    <link rel="stylesheet" type="text/css" href="../ext/jquery-ui.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/common.css?v=0.3">
+    <link rel="stylesheet" type="text/css" href="../css/index.css">
+    <link rel="stylesheet" type="text/css" href="../css/trace.css">
+    <link rel="stylesheet" type="text/css" href="../css/waterfall.css">   
+<!--script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-0571796685487653",
+          enable_page_level_ads: true
+     });
+</script-->  
+</head>
+
+<body style='background-color: #fff; color:#000'>
+    <div class="searchForm">
+        <div class="sxlabel">    
+            电商平台
+        </div>        
+        <div class="sxform" id="platformDiv">    
+        </div>       
+    </div> 
+    <div class="searchForm">
+        <div class="sxlabel">    
+            操作类别
+        </div>        
+        <div class="sxform" id="actionTypeDiv">    
+        </div>       
+    </div>
+    <div class="searchForm">
+        <div class="sxlabel">    
+            更多条件
+        </div>        
+        <div class="sxform sxBox">   
+            <div class="sxSection">
+                <label for="fullText">关键字</label>
+                <input id="fullText" placeholder="🔍 ">    
+            </div>     
+            <div class="sxSection">
+                <label for="nickName">用户昵称</label>
+                <input id="nickName" placeholder=" ">    
+            </div> 
+            <div class="sxSection">
+                <label for="startTime">开始时间</label>
+                <input id="startTime" placeholder=" ">    
+            </div> 
+            <div class="sxSection">
+                <label for="endTime">截止时间</label>
+                <input id="endTime" placeholder=" ">    
+            </div>  
+            <div class="sxSection">
+                <div>&nbsp;&nbsp;</div>
+                <div id="findAll" class="searchBtn">搜&nbsp;&nbsp;索</div>      
+            </div>                                         
+        </div>       
+    </div>     
+
+    <div id="Center">
+        <ul id="waterfall"></ul>
+    </div>
+
+    <div id="footer" class="footer">
+        <button class="btn btn-default findMoreBtn-hide" id="findMoreBtn">一点也不华丽的底线</button>
+    </div>   
+
+    <div id="footer-placeholder" style="line-height: 60px">&nbsp;&nbsp;</div> 
+
+
+</body>
+
+<!--script src="https://code.jquery.com/jquery-1.12.4.min.js"></script-->
+<script type="text/javascript" src="../ext/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="../ext/jquery-ui.min.js"></script>
+<script type="text/javascript" src="../js/newWaterfall.js"></script>
+<script type="text/javascript" src="../js/util.js"></script>
+<script type="text/javascript" src="../js/trace/actions.js?v=1.10"></script> 
+</html>
