@@ -148,6 +148,7 @@ function mappingProperty(itemKey,platformPropertyId,platformPropertyName,standar
         records:[{
             value:{
                 _key:itemKey,
+                status:"pending",//等待同步到分析系统
                 mappingId:standardPropertyId.replace(/prop\-/g,""),
                 mappingName:standardPropertyName
             }
