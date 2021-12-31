@@ -12,12 +12,12 @@ a{
     text-decoration: none;
 }
 #main{
-	width:70%;
+	width:55%;
 }
 
 #meta{
 	margin-left:10px;
-	width:30%;
+	width:45%;
 }
 
 #tagging{
@@ -271,4 +271,25 @@ a{
     text-decoration: none;
     display: inline-block;
     font-size: 10px;
+}
+
+.taggingBtn{
+	background-color: dodgerblue; /* dodgerblue */
+    border: none;
+    border-radius: 10px;
+    color: white;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    font-weight:bold;
+    margin:2px 5px;
+}
+
+.sxSelect{
+    line-height: 20px;
+    border-color: silver;
+    font-size: 12px;
+    min-width: 200px;
 }

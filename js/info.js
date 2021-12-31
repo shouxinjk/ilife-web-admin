@@ -12,7 +12,8 @@ $(document).ready(function ()
     //设置正文部分宽度
     var bodyWidth = width*0.9;//960*width/1440; //1440分辨率下显示960宽度
     $("#body").width(bodyWidth);
-    galleryWidth = bodyWidth*0.7;//占比70%，960下宽度为672
+    chartWidth = bodyWidth*0.4;
+    galleryWidth = bodyWidth*0.55;//占比70%，960下宽度为672
     galleryHeight = 9*galleryWidth/16;//宽高比为16:9
     $("#main").width(galleryWidth);
     //处理参数
@@ -44,7 +45,8 @@ $(document).ready(function ()
     if(hideHeaderBar){
         $(".header").css("display","none");
     }
-
+    //显示tabs
+    $( "#tabs" ).tabs();
 });
 
 var _sxdebug = true;
@@ -53,11 +55,14 @@ var hideHeaderBar = true;
 var showAllItems = false;
 var map = null;
 
+var chartWidth = 500;
+
 var galleryWidth = 673;
 var galleryHeight = 378;
 
 //当前条目
 var stuff = {};
+var broker = {};//当前达人
 
 //融合后的属性key-value列表
 var nodes = [];
@@ -237,6 +242,76 @@ function showContent(item){
     //加载类目
     loadCategories();//显示类目选择器
 
+    //显示客观评价结果图表
+    if(item.media && item.media.measure){
+        $("#radarImg").empty();
+        $("#radarImg").append("<img style='object-fill:cover;width:100%' src='"+item.media.measure+"'/>");
+    }
+    if(item.media && item.media["measure-scheme"]){
+        $("#sunburstImg").empty();
+        $("#sunburstImg").append("<img style='object-fill:cover;width:100%' src='"+item.media["measure-scheme"]+"'/>");
+    }
+
+    //显示海报
+    var total = 0;
+    for(j in item.poster){
+        var posterUrl = item.poster[j];
+        $("#poster").append("<div id='poster"+j+"' class='prop-row'><img style='object-fill:cover;width:100%' src='"+posterUrl+"'/></div>");
+        total ++;
+    }
+    if(total>0)
+        $("#posterTitle").css("display","block");
+
+    //注册评价图表生成事件
+    $("#btnMeasure").click(function(){
+        var chartType = $("#measureScheme").val();
+        //显示评价树
+        if(stuff.meta && stuff.meta.category){
+            if("radar"==chartType){
+                $("#radarImg").empty();//隐藏原有图片
+                showRadar();//显示评价图
+            }else if("sunburst"==chartType){
+                $("#sunburstImg").empty();//隐藏原有图片
+                showDimensionBurst();//显示评价规则
+            }else{
+                //do nothing
+                console.log("wrong chart type.",chartType);
+            }
+        }
+    });
+    //注册海报生成事件
+    $("#btnPoster").click(function(){
+        //requestPosterScheme();//点击后重新生成海报
+        //获取当前选中的海报
+        var scheme = JSON.parse($("#posterScheme").val());
+        requestPoster(scheme,broker,stuff,app.globalData.userInfo);//根据当前选择重新生成海报
+    });
+    //注册图文内容生成事件
+    requestArticleScheme();//获取图文模板列表
+    $("#btnArticle").click(function(){
+        requestArticle();
+    });    
+    //初始化tinyMCE编辑器
+    tinymce.init({
+        selector: '#article',
+        branding: false,
+        menubar: false,
+        toolbar: [
+            'styleselect | fontselect | fontsizeselect | bold italic underline strikethrough | link h2 h3 h4 blockquote | forecolor backcolor | link image | alignleft aligncenter alignright'
+          ],
+        plugins: 'autoresize',
+        autoresize_bottom_margin: 50, 
+        autoresize_max_height: 1000, // 编辑区域的最大高
+        autoresize_min_height: 600, //编辑区域的最小高度
+        autoresize_on_init: true,
+        autoresize_overflow_padding: 50
+      });
+
+    //注册发布到wordpress事件
+    $("#btnPublish").click(function(){
+        publishArticle();
+    });
+
     //显示标签列表，如果为空则用默认tags
     /**
     var tags = stuff.tags?stuff.tags:[];
@@ -257,6 +332,475 @@ function showContent(item){
     //广告
     //TODO
 }
+
+
+
+//generate and show radar chart
+//TODO: to query result for specified item
+//step1: query featured measures by meta.category
+//step2: query calculated featured measure data by itemKey
+//step3: assemble single item dataset
+//step 4-6 : query and assemble category average data set
+//step 7: show radar chart
+function showRadar(){
+    var margin = {top: 60, right: 60, bottom: 60, left: 60},
+        width = Math.min(chartWidth, window.innerWidth - 10) - margin.left - margin.right,
+        height = Math.min(width, window.innerHeight - margin.top - margin.bottom - 20);
+            
+    //query item measure data
+    var data = [];
+
+    //获取类目下的特征维度列表：注意是同步调用
+    var featuredDimension = [];
+    $.ajax({
+        url:app.config.sx_api+"/mod/itemDimension/rest/featured-dimension",
+        type:"get",
+        async:false,//同步调用
+        data:{categoryId:stuff.meta.category},
+        success:function(json){
+            console.log("===got featured dimension===\n",json);
+            featuredDimension = json;
+        }
+    });  
+    
+    //未能获取维度列表则直接返回
+    if(!featuredDimension || featuredDimension.length ==0)
+        return;
+
+    //显示标题：
+    $("#radarTitle").css("display","block");
+
+    //根据itemKey获取评价结果
+    //feature = 1；dimensionType：0客观评价，1主观评价
+    var itemScore = {};
+    $.ajax({
+        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=0 and itemKey='"+stuff._key+"' format JSON",
+        type:"get",
+        async:false,//同步调用
+        data:{},
+        success:function(json){
+            console.log("===got item score===\n",json);
+            for(var i=0;i<json.rows;i++){
+                itemScore[json.data[i].dimensionId] = json.data[i].score;
+            }
+        }
+    });  
+
+    //根据categoryId获取评价结果
+    //feature = 1；dimensionType：0客观评价，1主观评价
+    var categoryScore = {};
+    $.ajax({
+        url:app.config.analyze_api+"?query=select dimensionId,avg(score) as score from ilife.info where feature=1 and dimensionType=0 and categoryId='"+stuff.meta.category+"' group by dimensionId format JSON",
+        type:"get",
+        async:false,//同步调用
+        data:{},
+        success:function(json){
+            console.log("===got category score===\n",json);
+            for(var i=0;i<json.rows;i++){
+                categoryScore[json.data[i].dimensionId] = json.data[i].score;
+            }
+        }
+    }); 
+
+    //组装展示数据：根据维度遍历。
+    var itemArray = [];
+    var categoryArray = [];
+    for(var i=0;i<featuredDimension.length;i++){
+        var dimId = featuredDimension[i].id;
+        var dimName = featuredDimension[i].name;
+        itemArray.push({
+            axis:dimName,
+            value:itemScore[dimId]?itemScore[dimId]:0.5
+        });
+        categoryArray.push({
+            axis:dimName,
+            value:categoryScore[dimId]?categoryScore[dimId]:0.75
+        });       
+    }
+
+    data = [];
+    data.push(itemArray);
+    data.push(categoryArray);
+
+    //generate radar chart.
+    //TODO: to put in ajax callback
+    var color = d3.scaleOrdinal(["#CC333F","#EDC951","#00A0B0"]);
+        
+    var radarChartOptions = {
+      w: width,
+      h: height,
+      margin: margin,
+      maxValue: 1,
+      levels: 5,
+      roundStrokes: true,
+      color: color
+    };
+    //genrate radar
+    RadarChart("#radar", data, radarChartOptions);
+
+    //将生成的客观评价图片提交到fdfs
+    var canvas = $("#radar svg")[0];
+    console.log("got canvas.",canvas);
+    //调用方法转换即可，转换结果就是uri,
+    var width = $(canvas).attr("width");
+    var height = $(canvas).attr("height");
+    var options = {
+        encoderOptions:1,
+        scale:2,
+        left:0,
+        top:0,
+        width:Number(width),
+        height:Number(height)
+    };
+    svgAsPngUri(canvas, options, function(uri) {
+        //console.log("image uri.",dataURLtoFile(uri,"dimension.png"));
+        //$("#radarImg").append('<img width="'+Number(width)+'" height="'+Number(height)+'" src="' + uri + '" alt="请长按保存"/>');
+        //TODO： 将图片提交到服务器端。保存文件名为：itemKey-d.png
+        uploadPngFile(uri, "measure-radra.png", "measure");//文件上传后将在stuff.media下增加{measure:imagepath}键值对
+    });        
+}
+
+//上传图片文件到服务器端保存，用于海报生成
+//mediaKey：用于指出在item.media下的key
+function uploadPngFile(dataurl, filename, mediaKey){
+    var formData = new FormData();
+    formData.append("files", dataURLtoFile(dataurl, filename));//注意，使用files作为字段名
+    if(stuff.media&&stuff.media[mediaKey]&&stuff.media[mediaKey].indexOf("group")>0){//已经生成过的会直接存储图片链接，链接中带有group信息
+        var oldFileId = stuff.media[mediaKey].split("group")[1];//返回group后的字符串，后端将解析
+        console.log("got old fileid.[fileId]"+oldFileId);
+        formData.append("fileId", oldFileId);//传递之前已经存储的文件ID，即group之后的部分，后端根据该信息完成历史文件删除
+    }else{
+        formData.append("fileId", "");//否则设为空
+    }
+    $.ajax({
+         type:'POST',
+         url:app.config.sx_api+"/rest/api/upload",
+         data:formData,
+         contentType:false,
+         processData:false,//必须设置为false，不然不行
+         dataType:"json",
+         mimeType:"multipart/form-data",
+         success:function(data){//把返回的数据更新到item
+            console.log("chart file uploaded. try to update item info.",data);
+            console.log("image path",app.config.file_api+"/"+data.fullpath);
+            //将返回的media存放到stuff
+            if(data.fullpath && data.group.length>0 && data.fullpath.length>6){//仅在成功返回后才操作
+                if(!stuff.media)
+                    stuff.media = {};
+                stuff.media[mediaKey] = app.config.file_api+"/"+data.fullpath;
+                submitItemForm();//提交修改
+            }
+         }
+     }); 
+}
+
+//转换base64为png文件
+function dataURLtoFile(dataurl, filename) {
+  // 获取到base64编码
+  const arr = dataurl.split(',')
+  // 将base64编码转为字符串
+  const bstr = window.atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n) // 创建初始化为0的，包含length个元素的无符号整型数组
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new File([u8arr], filename, {
+    type: 'image/png',//固定为png格式
+  })
+}
+
+//生成图文内容：请求模板列表
+function requestArticleScheme(){
+    //获取模板列表
+    $.ajax({
+        url:app.config.sx_api+"/mod/viewTemplate/rest/listByType/item-article",
+        type:"get",
+        data:{},
+        success:function(schemes){
+            console.log("\n===got item article schemes ===\n",schemes);
+            //遍历模板
+            var total = 0;
+            for(var i=0;i<schemes.length;i++){
+                //将模板显示到界面，等待选择后生成
+                $("#articleScheme").append("<option value='"+schemes[i].id+"'>"+schemes[i].name+"</option>");
+                total++;
+            }
+            if(total>0){
+                $("#articleScheme option:eq(0)").attr('selected', 'selected');//选中第一个
+                $("#btnArticle").css('display', 'block');//显示生成按钮
+            }
+        }
+    });  
+}
+
+//根据选中的模板生成当前商品的图文，并等待发布
+function requestArticle(){
+    var templateId = $("#articleScheme").val();
+    console.log("\n===try to generate article by template. ===\n",templateId);
+    //生成html并显示到界面
+    $.ajax({
+        url:app.config.sx_api+"/rest/api/material-html",
+        type:"post",
+        data:JSON.stringify({
+            templateId:templateId,
+            item: stuff
+        }),
+        headers:{
+            "Content-Type":"application/json"
+        },        
+        success:function(res){
+            console.log("\n===got html article ===\n",res);
+            //直接显示到界面
+            //$("#article").empty();//先清空已有内容
+            //$("#article").append(res.html);
+            tinyMCE.activeEditor.setContent(res.html);
+            //显示标题框及发布按钮
+            $("#btnPublish").css("display","block");
+            $("#postTitle").css("display","block");
+            $("#postTitle").val(stuff.title);//默认采用商品标题
+        }
+    });      
+}
+
+//发布文章到wordpress
+function publishArticle(){
+    var templateId = $("#articleScheme").val();//获取当前文章对应的ID
+    var postTitle = $("#postTitle").val();//获取发布内容标题
+    //var postContent = $("#article").html();//使用html作为内容
+    var postContent = tinyMCE.activeEditor.getContent();
+    console.log(" got content from editor.",postContent);
+    //判断是否已经生成
+    if(stuff.article && stuff.article[templateId]){//如果已经生成则直接更新，注意存储的是文章ID
+        console.log("\n===try to update exists article. ===\n",stuff.article[templateId]);
+        $.ajax({
+            url:app.config.mp_api+"/wp-json/wp/v2/posts/"+stuff.article[templateId],
+            type:"post",
+            data:JSON.stringify({
+                title:postTitle,
+                content: postContent,
+                status: "publish"
+            }),
+            headers:{
+                "Content-Type":"application/json",
+                "Authorization":"Basic aWxpZmUtYXBwOm9FNHkgZ0ZJNCBQWlVyIG5QeHQgN29WciA1ZHBZ"
+            },        
+            success:function(res){
+                console.log("\n=== published ===\n",res);
+                //显示提示
+                $.toast({
+                    heading: 'Success',
+                    text: '更新成功',
+                    showHideTransition: 'fade',
+                    icon: 'success'
+                });                
+                //更新到stuff
+                if(!stuff.article)
+                    stuff.article={};
+                stuff.article[templateId]=res.id;
+                submitItemForm();//提交修改
+            }
+        }); 
+    }else{//否则生成新的文章，并且更新stuff.article
+        console.log("\n===try to publish new article. ===\n");
+        $.ajax({
+            url:app.config.mp_api+"/wp-json/wp/v2/posts",
+            type:"post",
+            data:JSON.stringify({
+                title:postTitle,
+                content: postContent,
+                status: "publish"
+            }),
+            headers:{
+                "Content-Type":"application/json",
+                "Authorization":"Basic aWxpZmUtYXBwOm9FNHkgZ0ZJNCBQWlVyIG5QeHQgN29WciA1ZHBZ"
+            },        
+            success:function(res){
+                console.log("\n=== published ===\n",res);
+                //显示提示
+                $.toast({
+                    heading: 'Success',
+                    text: '发布成功',
+                    showHideTransition: 'fade',
+                    icon: 'success'
+                });                
+                //更新到stuff
+                if(!stuff.article)
+                    stuff.article={};
+                stuff.article[templateId]=res.id;
+                submitItemForm();//提交修改
+            }
+        }); 
+    }
+}
+
+//生成商品海报：先获得海报列表
+function requestPosterScheme(){
+    //仅对已经确定类目的商品进行
+    if(!stuff.meta || !stuff.meta.category)
+        return;
+
+    $.ajax({
+        url:app.config.sx_api+"/mod/posterTemplate/rest/item-templates",
+        type:"get",
+        data:{categoryId:stuff.meta.category},
+        success:function(schemes){
+            console.log("\n===got item poster scheme ===\n",schemes);
+            //遍历海报并生成
+            for(var i=0;i<schemes.length;i++){
+                //传递broker/stuff/userInfo作为海报生成参数
+                //requestPoster(schemes[i],broker,stuff,app.globalData.userInfo);
+                //将海报列表填写到选择器，可以根据需要选择生成
+               //遍历模板
+                var total = 0;
+                for(var i=0;i<schemes.length;i++){
+                    //将模板显示到界面，等待选择后生成：注意将scheme json作为value
+                    $("#posterScheme").append("<option value='"+JSON.stringify(schemes[i])+"'>"+schemes[i].name+"</option>");
+                    total++;
+                }
+                if(total>0){
+                    $("#posterScheme option:eq(0)").attr('selected', 'selected');//选中第一个
+                    $("#btnPoster").css('display', 'block');//显示生成按钮
+                }
+            }
+        }
+    });  
+}
+
+//生成海报，返回海报图片URL
+//注意：海报模板中适用条件及参数仅能引用这三个参数
+function requestPoster(scheme,xBroker,xItem,xUser){
+    //判断海报模板是否匹配当前条目
+    var isOk = true;
+    if(scheme.condition && scheme.condition.length>0){//如果设置了适用条件则进行判断
+        console.log("\n===try eval poster condition===\n",scheme.condition);
+        try{
+            isOk = eval(scheme.condition);
+        }catch(err){
+            console.log("\n=== eval poster condition error===\n",err);
+        }
+        console.log("\n===result eval poster condition===\n",isOk);
+    }
+    if(!isOk){//如果不满足则直接跳过
+        console.log("condition not satisifed. ignore.");
+        return;       
+    }
+
+    //检查是否已经生成，如果已经生成则不在重新生成
+    /**
+    if(stuff.poster && stuff.poster[scheme.id]){
+        console.log("\n=== poster exists. ignore.===\n");
+        return;
+    }
+    //**/
+
+    //准备海报参数
+    console.log("\n===try eval poster options===\n",scheme.options);
+    try{
+        eval(scheme.options);//注意：脚本中必须使用 var xParam = {}形式赋值
+    }catch(err){
+        console.log("\n=== eval poster options error===\n",err);
+        return;//这里出错了就别玩了
+    }
+    console.log("\n===eval poster options===\n",xParam);
+    var options = {//merge参数配置
+                  ...app.config.poster_options,//静态参数：accessKey、accessSecret信息
+                  ...xParam //动态参数：配置时定义
+                }
+    console.log("\n===start request poster with options===\n",options);
+    //请求生成海报
+    $.ajax({
+        url:app.config.poster_api+"/api/link",
+        type:"post",
+        data:JSON.stringify(options),
+        success:function(res){
+            console.log("\n===got item poster info ===\n",res);
+            //将海报信息更新到stuff
+            if(res.code==0 && res.url && res.url.length>0){
+                if(!stuff.poster)
+                    stuff.poster = {};
+                stuff.poster[scheme.id] = res.url;//以schemeId作为键值存储poster
+                submitItemForm();//提交修改
+                //显示到界面
+                var showPoster = true;
+                if(showPoster){
+                    //$("#poster"+scheme.id).remove();//删除old海报图片
+                    $("#poster").empty();//清空
+                    $("#poster").append("<div id='poster"+scheme.id+"' class='prop-row'><img style='object-fill:cover;width:100%' src='"+res.url+"'/></div>");
+                    $("#posterTitle").css("display","block"); 
+                }
+            }
+        }
+    });     
+}
+
+//图形化显示客观评价树
+function showDimensionBurst(){
+    //测试数据
+    var testData=[
+        {categoryId:"ff240a6e909e45c2ae0c8f77241cda25",categoryName:"目的地"},
+        {categoryId:"7363d428d1f1449a904f5d34aaa8f1f7",categoryName:"亲子"},
+        {categoryId:"91349a6a41ce415caf5b81084927857a",categoryName:"酒店"}
+    ];
+    var testDataIndex = new Date().getTime()%3;
+
+    //根据category获取客观评价数据
+    var data={
+        categoryId:stuff.meta.category
+        //categoryId:testData[testDataIndex].categoryId
+        //categoryId:"ff240a6e909e45c2ae0c8f77241cda25" //目的地
+        //categoryId:"7363d428d1f1449a904f5d34aaa8f1f7" //亲子
+        //categoryId:"91349a6a41ce415caf5b81084927857a" //酒店 categoryId
+        //,parentId:"d1668f8b3c9748cd806462a45651827b"
+    };
+    console.log("try to load dimension data.",data);
+    util.AJAX(app.config.sx_api+"/mod/itemDimension/rest/dim-tree-by-category", function (res) {
+        console.log("======\nload dimension.",data,res);
+        if (res.length>0) {//显示图形
+            //showSunBurst({name:testData[testDataIndex].categoryName,children:res});
+            showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:res});
+        }else{//没有则啥也不干
+            //do nothing
+            console.log("failed load dimension tree.",data);
+        }
+    },"GET",data);    
+}
+
+function showSunBurst(data){
+    //显示标题：
+    $("#sunburstTitle").css("display","block");
+    //显示sunburst图表    
+    Sunburst("#sunburst",data, {
+      value: d => d.weight, // weight 
+      label: d => d.name, // name
+      title: (d, n) => `${n.ancestors().reverse().map(d => d.data.name).join(".")}\n${n.value.toLocaleString("en")}`, // hover text
+//      link: (d, n) => n.children
+//        ? `https://github.com/prefuse/Flare/tree/master/flare/src/${n.ancestors().reverse().map(d => d.data.name).join("/")}`
+//        : `https://github.com/prefuse/Flare/blob/master/flare/src/${n.ancestors().reverse().map(d => d.data.name).join("/")}.as`,
+      width: 400,
+      height: 400
+    });
+
+    //将生成的客观评价图片提交到fdfs
+    var canvas = $("#sunburst svg")[0];
+    console.log("got canvas.",canvas);
+    //调用方法转换即可，转换结果就是uri,
+    var width = $(canvas).attr("width");
+    var height = $(canvas).attr("height");
+    var options = {
+            scale:2,
+            left:-1*Number(width)/2,
+            top:-1*Number(height)/2,
+            width:Number(width),
+            height:Number(height)
+        };
+    svgAsPngUri(canvas, options, function(uri) {
+        //console.log("image uri.",dataURLtoFile(uri,"dimension.png"));
+        //将图片提交到服务器端。保存文件文件key为：measure-scheme
+        uploadPngFile(uri, "measure-sunburst.png", "measure-scheme");//文件上传后将在stuff.media下增加{measure-scheme:imagepath}键值对
+    });  
+}
+
 
 /**
 根据地址解析得到经纬度
@@ -293,6 +837,10 @@ function getLocationByAddress(address){
 }
 
 //提交索引
+function index(item){
+    submitItemForm(item,true);
+}
+/**
 function index(item){//记录日志
     var data = {
         records:[{
@@ -318,6 +866,35 @@ function index(item){//记录日志
             goNextItem();
         }
     })            
+}
+//**/
+
+function submitItemForm(item=stuff, isJump=false){
+    var data = {
+        records:[{
+            value:item
+        }]
+    };
+    $.ajax({
+        url:"http://kafka-rest.shouxinjk.net/topics/stuff",
+        type:"post",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/vnd.kafka.json.v2+json",
+            "Accept":"application/vnd.kafka.v2+json"
+        },
+        success:function(result){
+            if(isJump){
+                $.toast({
+                    heading: 'Success',
+                    text: '更新成功',
+                    showHideTransition: 'fade',
+                    icon: 'success'
+                });
+                goNextItem();
+            }
+        }
+    })     
 }
 
 var pendingCount=3;//等待最后一个异步调用返回才跳转
@@ -468,8 +1045,18 @@ function loadItem(key){//获取内容列表
         type:"get",
         data:{},
         success:function(data){
-            showContent(data);
             stuff = data;
+            showContent(data);
+
+            //显示评价树
+            if(stuff.meta && stuff.meta.category){
+                requestPosterScheme();//请求海报模板列表
+                if(!stuff.media || !stuff.media["measure-scheme"])//仅在第一次进入时才尝试自动生成
+                    showDimensionBurst();//显示评价规则
+                if(!stuff.media || !stuff.media["measure"])//仅在第一次进入时才尝试自动生成
+                    showRadar();//显示评价图
+            }
+
             if(data.categoryId){//如果当前数据已经设置了ItemCategory
                 //加载当前ItemCategory
                 $("#category").val((data.category?data.category:"-")+":"+(data.categoryId?data.categoryId:"-"));//更改显示内容；
@@ -775,4 +1362,5 @@ function showTagging(tags){
     });   
 
 }
+
 
