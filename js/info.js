@@ -82,6 +82,8 @@ var itemCategoryNew = {
     keys:[]
 };
 
+var posterSchemes = {};//缓存posterScheme，存储posterId、options
+
 //支持的类目
 var categories = [];
 var cascader = null;//级联选择器实例
@@ -262,6 +264,9 @@ function showContent(item){
     if(total>0)
         $("#posterTitle").css("display","block");
 
+    //生成文案
+    requestAdviceScheme();
+
     //注册评价图表生成事件
     $("#btnMeasure").click(function(){
         var chartType = $("#measureScheme").val();
@@ -283,7 +288,10 @@ function showContent(item){
     $("#btnPoster").click(function(){
         //requestPosterScheme();//点击后重新生成海报
         //获取当前选中的海报
-        var scheme = JSON.parse($("#posterScheme").val());
+        var posterSchemeId = $("#posterScheme").val();
+        console.log("got poster scheme.",posterSchemeId);
+        //var scheme = JSON.parse($("#posterScheme").val());
+        var scheme = posterSchemes[posterSchemeId];
         requestPoster(scheme,broker,stuff,app.globalData.userInfo);//根据当前选择重新生成海报
     });
     //注册图文内容生成事件
@@ -446,6 +454,7 @@ function showRadar(){
     var height = $(canvas).attr("height");
     var options = {
         encoderOptions:1,
+        //encoderType:"image/jpeg",
         scale:2,
         left:0,
         top:0,
@@ -460,8 +469,45 @@ function showRadar(){
     });        
 }
 
+
+//上传图片到fast-poster，便于海报生成
+//**
+function uploadPngFile(dataurl, filename, mediaKey){
+    var formData = new FormData();
+    formData.append("file", dataURLtoFile(dataurl, filename));//注意，使用files作为字段名
+    if(stuff.media&&stuff.media[mediaKey]&&stuff.media[mediaKey].indexOf("group")>0){//已经生成过的会直接存储图片链接，链接中带有group信息
+        var oldFileId = stuff.media[mediaKey].split("group")[1];//返回group后的字符串，后端将解析
+        console.log("got old fileid.[fileId]"+oldFileId);
+        formData.append("fileId", oldFileId);//传递之前已经存储的文件ID，即group之后的部分，后端根据该信息完成历史文件删除
+    }else{
+        formData.append("fileId", "");//否则设为空
+    }
+    $.ajax({
+         type:'POST',
+         url:app.config.poster_api+"/api/upload",
+         data:formData,
+         contentType:false,
+         processData:false,//必须设置为false，不然不行
+         dataType:"json",
+         mimeType:"multipart/form-data",
+         success:function(data){//把返回的数据更新到item
+            console.log("chart file uploaded. try to update item info.",data);
+            console.log("image path",app.config.file_api+"/"+data.fullpath);
+            //将返回的media存放到stuff
+            if(data.code ==0 && data.url.length>0 ){//仅在成功返回后才操作
+                if(!stuff.media)
+                    stuff.media = {};
+                stuff.media[mediaKey] = app.config.poster_api+"/"+data.url;
+                submitItemForm();//提交修改
+            }
+         }
+     }); 
+}
+//**/
+
 //上传图片文件到服务器端保存，用于海报生成
 //mediaKey：用于指出在item.media下的key
+/**
 function uploadPngFile(dataurl, filename, mediaKey){
     var formData = new FormData();
     formData.append("files", dataURLtoFile(dataurl, filename));//注意，使用files作为字段名
@@ -493,6 +539,7 @@ function uploadPngFile(dataurl, filename, mediaKey){
          }
      }); 
 }
+//**/
 
 //转换base64为png文件
 function dataURLtoFile(dataurl, filename) {
@@ -508,6 +555,70 @@ function dataURLtoFile(dataurl, filename) {
   return new File([u8arr], filename, {
     type: 'image/png',//固定为png格式
   })
+}
+
+
+//生成文案列表：请求文案列表，请求后直接生成文案
+function requestAdviceScheme(){
+    //获取模板列表
+    $.ajax({
+        url:app.config.sx_api+"/mod/template/rest/item-templates",
+        type:"get",
+        data:{categoryId:stuff.meta.category},
+        success:function(schemes){
+            console.log("\n===got item advice schemes ===\n",schemes);
+            //遍历并生成文案
+            var total = 0;
+            for(var i=0;i<schemes.length;i++){
+                //将模板显示到界面，等待选择后生成
+                requestAdvice(schemes[i]);
+                total++;
+            }
+            if(total==0){
+                $("#advice").append("<div>糟糕，还有可用的文案哦~~</div>");//提示缺少文案定义
+            }
+        }
+    });  
+}
+
+
+//生成文案
+function requestAdvice(scheme,xBroker,xItem,xUser){
+    //判断海报模板是否匹配当前条目
+    var isOk = true;
+    if(scheme.condition && scheme.condition.length>0){//如果设置了适用条件则进行判断
+        try{
+            isOk = eval(scheme.condition);
+        }catch(err){
+            console.log("\n=== eval poster condition error===\n",err);
+        }
+    }
+    if(!isOk){//如果不满足则直接跳过
+        console.log("condition not satisifed. ignore.");
+        return;       
+    }
+
+    //检查是否已经生成，如果已经生成则不在重新生成
+    /**
+    if(stuff.advice && stuff.advice[scheme.id]){
+        console.log("\n=== advice exists. ignore.===\n");
+        return;
+    }
+    //**/
+
+    //生成文案
+    try{
+        eval(scheme.expression);//注意：脚本中必须使用 var xAdvice=**定义结果
+    }catch(err){
+        return;//这里出错了就别玩了
+    }
+    //将文案显示到界面
+    $("#advice").append("<blockquote class='big-quote'><div class='prop-key'><strong>"+scheme.name+"</strong></div><div id='advice"+scheme.id+"' class='prop-row'>"+xAdvice+"</div></blockquote>");    
+    //更新文案到stuff
+    if(!stuff.advice)
+        stuff.advice={};
+    stuff.advice[scheme.id] = xAdvice;
+    submitItemForm();//提交修改
 }
 
 //生成图文内容：请求模板列表
@@ -655,7 +766,9 @@ function requestPosterScheme(){
                 var total = 0;
                 for(var i=0;i<schemes.length;i++){
                     //将模板显示到界面，等待选择后生成：注意将scheme json作为value
-                    $("#posterScheme").append("<option value='"+JSON.stringify(schemes[i])+"'>"+schemes[i].name+"</option>");
+                    //$("#posterScheme").append("<option value='"+JSON.stringify(schemes[i])+"'>"+schemes[i].name+"</option>");
+                    posterSchemes[schemes[i].id] = schemes[i];//记录poster定义
+                    $("#posterScheme").append("<option value='"+schemes[i].id+"'>"+schemes[i].name+"</option>");
                     total++;
                 }
                 if(total>0){
@@ -788,6 +901,7 @@ function showSunBurst(data){
     var width = $(canvas).attr("width");
     var height = $(canvas).attr("height");
     var options = {
+            encoderOptions:1,
             scale:2,
             left:-1*Number(width)/2,
             top:-1*Number(height)/2,
