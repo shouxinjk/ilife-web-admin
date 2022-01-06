@@ -88,6 +88,9 @@ var posterSchemes = {};//缓存posterScheme，存储posterId、options
 var categories = [];
 var cascader = null;//级联选择器实例
 
+//评价指标列表
+var measureScheme = [];//每一项包含name weight children
+
 //将item显示到页面
 function showContent(item){
     //左侧：
@@ -655,7 +658,8 @@ function requestArticle(){
         type:"post",
         data:JSON.stringify({
             templateId:templateId,
-            item: stuff
+            item: stuff,
+            measureScheme: measureScheme
         }),
         headers:{
             "Content-Type":"application/json"
@@ -871,6 +875,7 @@ function showDimensionBurst(){
         console.log("======\nload dimension.",data,res);
         if (res.length>0) {//显示图形
             //showSunBurst({name:testData[testDataIndex].categoryName,children:res});
+            measureScheme = res;
             showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:res});
         }else{//没有则啥也不干
             //do nothing
@@ -1246,7 +1251,7 @@ function showCascader(categoryId){
         onSelect:function(selectedCategory){//回调函数，参数带有选中标签的ID和label。回传为：{id:[],label:[]}//其中id为最末级选中节点，label为所有层级标签
             if(_sxdebug)console.log("crawler::category item selected.",selectedCategory);
             //更新当前item的category。注意更新到meta.category下
-            stuff.meta = {category:selectedCategory.id[0],categoryName:selectedCategory.label[0]};//仅保存叶子节点
+            stuff.meta = {category:selectedCategory.id[0],categoryName:selectedCategory.label[selectedCategory.label.length-1]};//仅保存叶子节点
             stuff.status.classify = "ready";//更新classify状态classify
             stuff.timestamp.classify = new Date();//更新classify时间戳
             //加载属性值列表
