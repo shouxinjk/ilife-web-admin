@@ -161,10 +161,6 @@ function showContent(item){
             stuff.status.load = "pending";//提交后需要重新分析
             stuff.status.index = "pending";//提交后需要重新索引
 
-            //先更新数据
-            batchUpdateStuffCategory(stuff);//根据当前设置批量修改其他同类目stuff
-            batchUpdatePlatformCategories(stuff);//根据当前设置批量修改其他同类目platform_categories
-
             //然后索引
             console.log("now start commit index.",stuff);
             index(stuff);
@@ -246,6 +242,11 @@ function showContent(item){
 
     //加载类目
     loadCategories();//显示类目选择器
+    //注册批量更新stuff类目按钮
+    $("#btnBatchUpdateStuff").click(function(){
+        batchUpdateStuffCategory(stuff);//根据当前设置批量修改其他同类目stuff
+        //batchUpdatePlatformCategories(stuff);//根据当前设置批量修改其他同类目platform_categories
+    });
 
     //显示客观评价结果图表
     if(item.media && item.media.measure){
@@ -1010,18 +1011,10 @@ function submitItemForm(item=stuff, isJump=false){
                     showHideTransition: 'fade',
                     icon: 'success'
                 });
-                goNextItem();
+                window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
             }
         }
     })     
-}
-
-var pendingCount=3;//等待最后一个异步调用返回才跳转
-function goNextItem(){
-    pendingCount--
-    console.log("pending jump to next page. pending requests = ",pendingCount);
-    if(pendingCount < 2)//更新stuff较慢，不等待，直接跳转
-        window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
 }
 
 
@@ -1044,14 +1037,20 @@ function batchUpdateStuffCategory(item){
             "Accept":"application/json"
         },
         success:function(result){
-            console.log("stuff category mapping done.",result);
-            goNextItem();
+            console.log("已更新所有同类目Stuff",result);
+            $.toast({
+                heading: 'Success',
+                text: '已更新所有同类目Stuff',
+                showHideTransition: 'fade',
+                icon: 'success'
+            });
         }
     });
 }
 
 //批量修改my_stuff及platform_categories
 //更新platform_categories中的设置条目：注意：由于my_stuff内无cid，不能采用insert方式，只用更新方式。另外，如果已经设置，则以此处更新优先
+//TODO：需要修改为更新stuff，当前是更新category mapping
 /**
 function batchUpdatePlatformCategories(item){
     var data = {
@@ -1088,16 +1087,13 @@ function batchUpdatePlatformCategories(item){
         names = array;
     }
     var platform_category = {
-        _key:hex_md5(item.source+item.category),
-        source:item.source,
+        platform:item.source,
         name:name,
-        names:names,
-        mappingId:item.meta.category,
-        mappingName:item.meta.categoryName
+        categoryId:item.meta.category
     };
     console.log("try to commit platform category.",platform_category);
     $.ajax({
-        url:"https://data.shouxinjk.net/_db/sea/category/platform_categories",
+        url:"https://data.shouxinjk.net/ilife/a/mod/platformCategory/rest/mapping",
         type:"post",
         data:JSON.stringify(platform_category),//注意：不能使用JSON对象
         //data:data,
@@ -1107,7 +1103,45 @@ function batchUpdatePlatformCategories(item){
         },
         success:function(res){
             console.log("upsert success.",res);
-            goNextItem();
+            $.toast({
+                heading: 'Success',
+                text: '已更新所有标准类目相同的Stuff',
+                showHideTransition: 'fade',
+                icon: 'success'
+            });
+        },
+        error:function(){
+            console.log("upsert failed.",platform_category);
+        }
+    }); 
+}
+
+//修改目录映射
+function changeCategoryMapping(){
+    var name = "";
+    if(Array.isArray(stuff.category)){
+        name = stuff.category[stuff.category.length-1];
+    }else if(stuff.category){
+        var array = stuff.category.split(" ");
+        name = array[array.length-1];
+    }
+    var platform_category = {
+        platform:stuff.source,
+        name:name,
+        categoryId:stuff.meta.category
+    };
+    console.log("try to commit platform category.",platform_category);
+    $.ajax({
+        url:"https://data.shouxinjk.net/ilife/a/mod/platformCategory/rest/mapping",
+        type:"post",
+        data:JSON.stringify(platform_category),//注意：不能使用JSON对象
+        //data:data,
+        headers:{
+            "Content-Type":"application/json",
+            "Accept": "application/json"
+        },
+        success:function(res){
+            console.log("upsert success.",res);
         },
         error:function(){
             console.log("upsert failed.",platform_category);
@@ -1256,6 +1290,10 @@ function showCascader(categoryId){
             stuff.timestamp.classify = new Date();//更新classify时间戳
             //加载属性值列表
             loadProps(selectedCategory.id[0]);
+            //更新类目映射：修改后直接提交修改
+            changeCategoryMapping();            
+            //显示批量更新stuff类目按钮：注意：由于是更改所有stuff，效率很低
+            $("#btnBatchUpdateStuff").css("display","block");
         }
     });
     //对于已经设置的类目则直接显示属性列表
