@@ -286,7 +286,8 @@ function showContent(item){
                 showRadar();//显示评价图
             }else if("sunburst"==chartType){
                 $("#sunburstImg").empty();//隐藏原有图片
-                showDimensionBurst();//显示评价规则
+                //showDimensionBurst();//显示评价规则
+                showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
             }else{
                 //do nothing
                 console.log("wrong chart type.",chartType);
@@ -355,6 +356,20 @@ var itemScore = {};//当前条目评分列表：手动修改后同时缓存
 var categoryScore = {};//当前条目所在类目评分列表
 var measureScores = [];//显示到grid供修改，在measure基础上增加score
 function loadMeasureAndScore(){
+    //根据category获取客观评价数据
+    var data = {
+        categoryId:stuff.meta.category
+    };
+    util.AJAX(app.config.sx_api+"/mod/itemDimension/rest/dim-tree-by-category", function (res) {
+        console.log("======\nload dimension.",data,res);
+        if (res.length>0) {//本地存储评价数据
+            measureScheme = res;
+        }else{//没有则啥也不干
+            //do nothing
+            console.log("failed load dimension tree.",data);
+        }
+    },"GET",data); 
+
     //获取类目下的特征维度列表
     $.ajax({
         url:app.config.sx_api+"/mod/itemDimension/rest/featured-dimension",
@@ -890,14 +905,6 @@ function requestPoster(scheme,xBroker,xItem,xUser){
 
 //图形化显示客观评价树
 function showDimensionBurst(){
-    //测试数据
-    var testData=[
-        {categoryId:"ff240a6e909e45c2ae0c8f77241cda25",categoryName:"目的地"},
-        {categoryId:"7363d428d1f1449a904f5d34aaa8f1f7",categoryName:"亲子"},
-        {categoryId:"91349a6a41ce415caf5b81084927857a",categoryName:"酒店"}
-    ];
-    var testDataIndex = new Date().getTime()%3;
-
     //根据category获取客观评价数据
     var data={
         categoryId:stuff.meta.category
@@ -1241,7 +1248,8 @@ function loadItem(key){//获取内容列表
             if(stuff.meta && stuff.meta.category){
                 requestPosterScheme();//请求海报模板列表
                 if(!stuff.media || !stuff.media["measure-scheme"])//仅在第一次进入时才尝试自动生成
-                    showDimensionBurst();//显示评价规则
+                    showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
+                    //showDimensionBurst();//显示评价规则
             }
 
             if(data.categoryId){//如果当前数据已经设置了ItemCategory
