@@ -301,8 +301,9 @@ function showContent(item){
         var posterSchemeId = $("#posterScheme").val();
         console.log("got poster scheme.",posterSchemeId);
         //var scheme = JSON.parse($("#posterScheme").val());
-        var scheme = posterSchemes[posterSchemeId];
-        requestPoster(scheme,broker,stuff,app.globalData.userInfo);//根据当前选择重新生成海报
+        currentPosterScheme = posterSchemes[posterSchemeId];
+        //requestPoster(scheme,broker,stuff,app.globalData.userInfo);//根据当前选择重新生成海报
+        generateQRcode();//生成分享二维码后再生成海报
     });
     //注册图文内容生成事件
     requestArticleScheme();//获取图文模板列表
@@ -522,6 +523,61 @@ function showRadar(){
         //TODO： 将图片提交到服务器端。保存文件名为：itemKey-d.png
         uploadPngFile(uri, "measure-radra.png", "measure");//文件上传后将在stuff.media下增加{measure:imagepath}键值对
     });        
+}
+
+var brokerQrcode = null;//存放达人二维码url
+var currentPosterScheme = null;//存放当前选中的海报模板
+//生成短连接及二维码
+function generateQRcode(){
+    console.log("start generate qrcode......");
+    var longUrl = "https://www.biglistoflittlethings.com/ilife-web-wx/info2.html?fromBroker=system&posterId="
+                        +currentPosterScheme.id+"&id="+stuff._key;//获取分享目标链接：包含itemKey及posterId
+    var header={
+        "Content-Type":"application/json"
+    };
+    util.AJAX(app.config.auth_api+"/wechat/ilife/short-url", function (res) {
+        console.log("generate short url.",longUrl,res);
+        var shortUrl = longUrl;
+        if (res.status) {//获取短连接
+            shortUrl = res.data.url;
+        }
+        //bug修复：qrcode在生成二维码时，如果链接长度是192-217之间会导致无法生成，需要手动补齐
+        if(shortUrl.length>=192 && shortUrl.length <=217){
+            shortUrl += "&placehold=fix-qrcode-bug-url-between-192-217";
+        }
+        console.log("generate qrcode by short url.[length]"+shortUrl.length,shortUrl);
+        var qrcode = new QRCode("app-qrcode-box");
+        qrcode.makeCode(shortUrl);
+        setTimeout(uploadQrcode,300);//需要图片装载完成后才能获取 
+    }, "POST", { "longUrl": longUrl },header);    
+}
+
+
+//上传二维码到poster服务器，便于生成使用
+function uploadQrcode(dataurl, filename){
+    dataurl = $("#app-qrcode-box img").attr("src");
+    filename = "broker-qrcode-system.png";
+    console.log("try to upload qrcode.",dataurl,filename);
+    var formData = new FormData();
+    formData.append("file", dataURLtoFile(dataurl, filename));//注意，使用files作为字段名
+    $.ajax({
+         type:'POST',
+         url:app.config.poster_api+"/api/upload",
+         data:formData,
+         contentType:false,
+         processData:false,//必须设置为false，不然不行
+         dataType:"json",
+         mimeType:"multipart/form-data",
+         success:function(data){//把返回的数据更新到item
+            console.log("qrcode file uploaded. try to update item info.",data);
+            if(data.code ==0 && data.url.length>0 ){//仅在成功返回后才操作
+                brokerQrcode = data.url;
+                console.log("qrcode image.[url]"+app.config.poster_api+"/"+data.url);
+                //生成海报
+                requestPoster();//全部加载完成后显示海报
+            }
+         }
+     }); 
 }
 
 
@@ -839,6 +895,8 @@ function requestPosterScheme(){
 //生成海报，返回海报图片URL
 //注意：海报模板中适用条件及参数仅能引用这三个参数
 function requestPoster(scheme,xBroker,xItem,xUser){
+    if(!scheme)
+        scheme = currentPosterScheme;
     //判断海报模板是否匹配当前条目
     var isOk = true;
     if(scheme.condition && scheme.condition.length>0){//如果设置了适用条件则进行判断
