@@ -1388,6 +1388,8 @@ function showCascader(categoryId){
             stuff.meta = {category:selectedCategory.id[0],categoryName:selectedCategory.label[selectedCategory.label.length-1]};//仅保存叶子节点
             stuff.status.classify = "ready";//更新classify状态classify
             stuff.timestamp.classify = new Date();//更新classify时间戳
+            //增加类目标签
+            patchCategoryTags(selectedCategory.id[0]);            
             //加载属性值列表
             loadProps(selectedCategory.id[0]);
             //更新类目映射：修改后直接提交修改
@@ -1401,6 +1403,36 @@ function showCascader(categoryId){
         loadProps(stuff.meta.category);
 }
 
+//获取指定类目信息，并将tag添加到tagging，便于标注
+function patchCategoryTags(categoryId){
+    console.log("try to query category tags.",categoryId);
+    $.ajax({
+        url:"https://data.shouxinjk.net/ilife/a/mod/itemCategory/rest/category/"+categoryId,
+        type:"get",
+        data:{},
+        headers:{
+            "Content-Type":"application/json",
+            "Accept": "application/json"
+        },
+        success:function(res){
+            console.log("got category detail.",res);
+            //更新到stuff
+            var categoryTags = res.tags?res.tags.split(" "):[];//采用空格分隔
+            for(var i=0;i<categoryTags.length;i++){
+                var categoryTag = categoryTags[i].trim();
+                if(!stuff.tagging)
+                    stuff.tagging = [];
+                if(stuff.tagging.indexOf(categoryTag)<0)
+                    stuff.tagging.push(categoryTag);
+            }
+            //更新到tagging显示框
+            $("#tagging").val(stuff.tagging.join(" "));
+        },
+        error:function(){
+            console.log("failed query category detail.",categoryId);
+        }
+    }); 
+}
 
 //根据ItemCategory类别，获取对应的属性配置，并与数据值融合显示
 //1，根据key进行合并显示，以itemCategory下的属性为主，能够对应上的key显示绿色，否则显示红色
