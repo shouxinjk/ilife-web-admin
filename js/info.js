@@ -1417,16 +1417,18 @@ function patchCategoryTags(categoryId){
         success:function(res){
             console.log("got category detail.",res);
             //更新到stuff
+            var tagging = $("#tagging").val();//以当前录入的tagging为主
+            var currentTagging = [];
+            if(tagging && tagging.trim().length>0)
+                currentTagging = tagging.trim().split(" ");
             var categoryTags = res.tags?res.tags.split(" "):[];//采用空格分隔
             for(var i=0;i<categoryTags.length;i++){
                 var categoryTag = categoryTags[i].trim();
-                if(!stuff.tagging)
-                    stuff.tagging = [];
-                if(stuff.tagging.indexOf(categoryTag)<0)
-                    stuff.tagging.push(categoryTag);
+                if(currentTagging.indexOf(categoryTag)<0)
+                    currentTagging.push(categoryTag);
             }
             //更新到tagging显示框
-            $("#tagging").val(stuff.tagging.join(" "));
+            $("#tagging").val(currentTagging.join(" "));
         },
         error:function(){
             console.log("failed query category detail.",categoryId);
