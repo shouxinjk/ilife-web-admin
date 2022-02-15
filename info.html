@@ -148,9 +148,12 @@
                         <select id="measureScheme" class="sxSelect">
                           <option value="radar">客观评价雷达图</option>
                           <option value="sunburst">客观评价树状放射图</option>
+                          <option value="radar2">主观评价雷达图</option>
                         </select>
                         <button id="btnMeasure" class="taggingBtn" class="btn" style="margin:0 10px;">生成图表</button>
-                      </div>                      
+                      </div>    
+
+                      <!-- 客观评价 -->                  
                       <!--button id="btnMeasure" class="taggingBtn">生成评价图表</button-->
                       <div id="radarTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;">客观评价雷达图：</div>             
                       <div id="radar">
@@ -167,8 +170,22 @@
                       </div>  
                       <!--客观评价结果：支持标注时手动录入-->
                       <div id="measuresDiv" style="display:none">
-                          <label class="formLabel" style="line-height: 30px;margin:5px 0; padding:5px 0;">评价结果</label>
+                          <label class="formLabel" style="line-height: 30px;margin:5px 0; padding:5px 0;">客观评价结果</label>
                           <div id="measuresList"></div>
+                      </div> 
+
+                      <!-- 主观评价 -->                      
+                      <!-- Radar2：主观评价雷达图 -->
+                      <div id="radarTitle2" class="prop-key" style="width:90%;display:none;margin:10px 0;">主观评价雷达图：</div>             
+                      <div id="radar2">
+                      </div> 
+                      <div id="radarImg2">
+                          <button id="saveRadar2" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
+                      </div>                       
+                      <!--客观评价结果：支持标注时手动录入-->
+                      <div id="measuresDiv2" style="display:none">
+                          <label class="formLabel" style="line-height: 30px;margin:5px 0; padding:5px 0;">主观评价结果</label>
+                          <div id="measuresList2"></div>
                       </div>                         
                   </div>
                   <div id="posterInfo">
@@ -238,6 +255,6 @@
 <script type="text/javascript" src="js/util2.js?v=2.0"></script>
 <script type="text/javascript" src="js/options.js?v=1.0"></script>
 <script type="text/javascript" src="js/util.js?v=1.03"></script>
-<script type="text/javascript" src="js/info.js?v=2.34"></script>
+<script type="text/javascript" src="js/info.js?v=2.35"></script>
 <!--script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=XwNTgTOf5mYaZYhQ0OiIb6GmOHsSZWul&services=&t=20190622163250"></script-->
 </html>
