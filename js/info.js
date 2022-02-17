@@ -879,7 +879,7 @@ function requestAdviceScheme(){
                 total++;
             }
             if(total==0){
-                $("#advice").append("<div>糟糕，还有可用的文案哦~~</div>");//提示缺少文案定义
+                $("#advice").append("<div>糟糕，还没有可用的文案哦~~</div>");//提示缺少文案定义
             }
         }
     });  
