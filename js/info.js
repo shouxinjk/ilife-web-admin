@@ -1826,7 +1826,7 @@ function showMeasureScores(){
 		        //提交数据并更新
 		        var priority = old.parentIds.length - old.parentIds.replace(/\,/g,"").length;
 			    $.ajax({
-			        url:app.config.analyze_api+"?query=insert into ilife.info values ('"+stuff._key+"','"+stuff.meta.category+"','"+old.id+"','"+old.propKey+"',0,"+priority+",1,"+old.weight+",'"+old.script+"',"+newScore+",1,now())",
+			        url:app.config.analyze_api+"?query=insert into ilife.info values ('"+stuff._key+"','"+stuff.meta.category+"','"+old.id+"','"+old.propKey+"',0,"+priority+",1,"+old.weight+",'"+old.script+"',"+newScore+",0,now())",
 			        type:"post",
 			        //data:{},
 			        headers:{
