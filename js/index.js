@@ -689,13 +689,13 @@ function changeFilter(currentFilter){
 
 function loadCategories(currentCategory){
     $.ajax({
-        url:"https://data.shouxinjk.net/_db/sea/category/categories",
+        url:app.config.sx_api+"/mod/channel/rest/channels/active",
         type:"get",
         success:function(msg){
             var navObj = $("#categoryNav");
             for(var i = 0 ; i < msg.length ; i++){
-                navObj.append("<li data='"+msg[i]._key+"' data-tagging='"+(msg[i].tagging?msg[i].tagging:"")+"'>"+msg[i].name+"</li>");
-                if(currentCategory == msg[i]._key){//高亮显示当前选中的category
+                navObj.append("<li data='"+msg[i].id+"' data-tagging='"+(msg[i].tagging?msg[i].tagging:"")+"'>"+msg[i].name+"</li>");
+                if(currentCategory == msg[i].id){//高亮显示当前选中的category
                     $(navObj.find("li")[i]).addClass("showNav");
                     tagging = msg[i].tagging;
                 }
