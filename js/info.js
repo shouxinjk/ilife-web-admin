@@ -889,7 +889,7 @@ function requestAdviceScheme(){
 //生成文案
 function requestAdvice(scheme,xBroker,xItem,xUser){
     //判断海报模板是否匹配当前条目
-    var isOk = true;
+    var isOk = false;
     if(scheme.condition && scheme.condition.length>0){//如果设置了适用条件则进行判断
         try{
             isOk = eval(scheme.condition);
@@ -1531,13 +1531,13 @@ function loadHosts(itemId){//获取推荐者列表，可能有多个
 //加载顶部导航栏
 function loadNavigationCategories(currentCategory){
     $.ajax({
-        url:"https://data.shouxinjk.net/_db/sea/category/categories",
+        url:app.config.sx_api+"/mod/channel/rest/channels/active",
         type:"get",
         success:function(msg){
             var navObj = $(".navUl");
             for(var i = 0 ; i < msg.length ; i++){
-                navObj.append("<li data='"+msg[i]._key+"'>"+msg[i].name+"</li>");
-                if(currentCategory == msg[i]._key)//高亮显示当前选中的category
+                navObj.append("<li data='"+msg[i].id+"'>"+msg[i].name+"</li>");
+                if(currentCategory == msg[i].id)//高亮显示当前选中的category
                     $(navObj.find("li")[i]).addClass("showNav");
             }
             //注册点击事件
