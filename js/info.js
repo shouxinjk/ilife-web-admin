@@ -896,6 +896,8 @@ function requestAdvice(scheme,xBroker,xItem,xUser){
         }catch(err){
             console.log("\n=== eval poster condition error===\n",err);
         }
+    }else{//如果未设置条件则表示适用于所有商品
+        isOk = true;
     }
     if(!isOk){//如果不满足则直接跳过
         console.log("condition not satisifed. ignore.");
