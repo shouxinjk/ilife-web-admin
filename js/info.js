@@ -125,16 +125,15 @@ function showContent(item){
     $("#jumpbtn").click(function(){jump(item);});   
     $("#title").click(function(){jump(item);}); 
     $("#indexbtn").click(function(){
-        //根据填写结果组织property
-        var props = [];
+        //根据填写结果组织property：注意统一组织为json对象，而不是数组
+        var props = {};
         for(var k in nodes){
             var node = nodes[k];
             var key = node.property;
-            var prop = {};
-            prop[key] = node.value;
-            props.push(prop);
+            props[key] = node.value;
         }
         item.props = props;
+
         //更新ItemCategory
         if(itemCategoryNew.categoryId){
             item.categoryId = itemCategoryNew.categoryId;
@@ -361,6 +360,16 @@ function showContent(item){
     //TODO
 }
 
+//该方法提供给推荐语模板使用，获取特征指标的评价结果，返回JSON：{propKey: score}
+function getItemScore(){
+    var featuredPropScore = {};
+    featuredDimension.forEach( prop =>{
+        if(prop.propKey)featuredPropScore[prop.propKey] = itemScore[prop.id];//未定义propKey则不予考虑
+        featuredPropScore[prop.name] = itemScore[prop.id];
+    });
+    return featuredPropScore;
+}
+
 var featuredDimension = [];//客观评价维度列表
 var itemScore = {};//当前条目评分列表：手动修改后同时缓存
 var categoryScore = {};//当前条目所在类目评分列表
@@ -452,6 +461,17 @@ function loadMeasureAndScore(){
     showMeasureScores();
 }
 
+
+
+//该方法提供给推荐语模板使用，获取主观特征指标的评价结果，返回JSON：{propKey: score}
+function getItemScore2(){
+    var featuredPropScore = {};
+    featuredDimension2.forEach( prop =>{
+        if(prop.type)featuredPropScore[prop.type] = itemScore2[prop.id];//未定义type则不加载
+        //featuredPropScore[prop.name] = itemScore2[prop.id];
+    });
+    return featuredPropScore;
+}
 
 //加载主观评价数据：
 //是客观评价的重复代码：捂脸捂脸捂脸
@@ -1307,7 +1327,7 @@ function submitItemForm(item=stuff, isJump=false){
                     showHideTransition: 'fade',
                     icon: 'success'
                 });
-                window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
+                window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")+(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"");
             }
         }
     })     
@@ -1723,7 +1743,7 @@ function loadProps(categoryId){
                     if(_sxdebug)console.log("item inserted",row);
                     //更新到当前修改item属性列表内
                     if(!stuff.props)
-                        stuff.props = [];
+                        stuff.props = {};
                     //由于采用的是键值对，需要进行遍历。考虑到浏览器影响，此处未采用ES6 Map对象
                     var props = [];//新建一个数组
                     var prop = {};
@@ -1745,13 +1765,14 @@ function loadProps(categoryId){
                             }
                         }                        
                     }
-                    stuff.props = props;
+                    stuff.props = props; 
+
                     if(_sxdebug)console.log("item props updated",stuff);                 
                 },
                 onItemUpdated:function(row){
                     if(_sxdebug)console.log("item updated",row);
                     if(!stuff.props)
-                        stuff.props = [];                    
+                        stuff.props = {};                    
                     //由于采用的是键值对，需要进行遍历。考虑到浏览器影响，此处未采用ES6 Map对象
                     var props = [];//新建一个数组
                     var prop = {};
@@ -1775,6 +1796,7 @@ function loadProps(categoryId){
                         }                        
                     }
                     stuff.props = props; 
+
                     if(_sxdebug)console.log("item props updated",stuff);   
                 },
 
