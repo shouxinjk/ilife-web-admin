@@ -1025,6 +1025,8 @@ function publishArticle(){
             },        
             success:function(res){
                 console.log("\n=== published ===\n",res);
+                //推送到运营微信群
+                sendMessageToWebhook(res.id);
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1055,6 +1057,8 @@ function publishArticle(){
             },        
             success:function(res){
                 console.log("\n=== published ===\n",res);
+                //推送到运营微信群
+                sendMessageToWebhook(res.id);
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1071,6 +1075,39 @@ function publishArticle(){
         }); 
     }
 }
+
+//发送信息到运营群：运营团队收到新内容提示
+function sendMessageToWebhook(articleId=''){
+    //推动图文内容到企业微信群，便于转发
+    var msg = {
+            "msgtype": "news",
+            "news": {
+               "articles" : [
+                   {
+                       "title" : stuff.distributor.name + (stuff.meta&&stuff.meta.categoryName?stuff.meta.categoryName:'')+"单品图文上新",
+                       "description" : stuff.title,
+                       "url" : "https://www.biglistoflittlethings.com/ilife-web-wx/content.html?id="+articleId,//将跳转到content.html附加浏览用户的formUser、fromBroker信息
+                       "picurl" : stuff.logo?stuff.logo:stuff.images[0]
+                   }
+                ]
+            }
+        };
+
+    //推送到企业微信
+    console.log("\n===try to sent webhook msg. ===\n");
+    $.ajax({
+        url:app.config.wechat_cp_api+"/wework/ilife/notify-cp-company-broker",
+        type:"post",
+        data:JSON.stringify(msg),
+        headers:{
+            "Content-Type":"application/json"
+        },        
+        success:function(res){
+            console.log("\n=== webhook message sent. ===\n",res);
+        }
+    });     
+}
+
 
 //生成商品海报：先获得海报列表
 function requestPosterScheme(){
