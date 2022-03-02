@@ -1026,7 +1026,7 @@ function publishArticle(){
             success:function(res){
                 console.log("\n=== published ===\n",res);
                 //推送到运营微信群
-                sendMessageToWebhook(res.id);
+                sendItemArticleToWebhook(res.id);
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1058,7 +1058,7 @@ function publishArticle(){
             success:function(res){
                 console.log("\n=== published ===\n",res);
                 //推送到运营微信群
-                sendMessageToWebhook(res.id);
+                sendItemArticleToWebhook(res.id);
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1077,7 +1077,7 @@ function publishArticle(){
 }
 
 //发送信息到运营群：运营团队收到新内容提示
-function sendMessageToWebhook(articleId=''){
+function sendItemArticleToWebhook(articleId=''){
     //推动图文内容到企业微信群，便于转发
     var msg = {
             "msgtype": "news",
@@ -1199,6 +1199,7 @@ function requestPoster(scheme,xBroker,xItem,xUser){
                 if(!stuff.poster)
                     stuff.poster = {};
                 stuff.poster[scheme.id] = res.url;//以schemeId作为键值存储poster
+                sendItemPosterToWebhook(res.url);//发送海报到企业微信群
                 submitItemForm();//提交修改
                 //显示到界面
                 var showPoster = true;
@@ -1212,6 +1213,40 @@ function requestPoster(scheme,xBroker,xItem,xUser){
         }
     });     
 }
+
+//发送信息到运营群：运营团队收到新内容提示
+//发送卡片：其链接为图片地址
+function sendItemPosterToWebhook(posterImgUrl){
+    //推动图文内容到企业微信群，便于转发
+    var msg = {
+            "msgtype": "news",
+            "news": {
+               "articles" : [
+                   {
+                       "title" : stuff.distributor.name + (stuff.meta&&stuff.meta.categoryName?stuff.meta.categoryName:'')+"海报",
+                       "description" : stuff.title,
+                       "url" : posterImgUrl,
+                       "picurl" : posterImgUrl
+                   }
+                ]
+            }
+        };
+
+    //推送到企业微信
+    console.log("\n===try to sent webhook msg. ===\n");
+    $.ajax({
+        url:app.config.wechat_cp_api+"/wework/ilife/notify-cp-company-broker",
+        type:"post",
+        data:JSON.stringify(msg),
+        headers:{
+            "Content-Type":"application/json"
+        },        
+        success:function(res){
+            console.log("\n=== webhook message sent. ===\n",res);
+        }
+    });     
+}
+
 
 //图形化显示客观评价树
 function showDimensionBurst(){
