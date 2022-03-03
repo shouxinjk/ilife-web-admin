@@ -1540,7 +1540,7 @@ function changeCategoryMapping(){
 //点击跳转到原始链接
 function jump(item){//支持点击事件
     //console.log(item.id,item.url);
-    logstash(item,"buy",function(){
+    logstash(item,"web","buy","system","system",function(){
         var target = item.url;
         if(item.link.web2){
             target = item.link.web2;
