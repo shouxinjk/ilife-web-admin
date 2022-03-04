@@ -18,9 +18,13 @@ $(document).ready(function ()
         delay: 100,
     });
     category = args["category"]?args["category"]:0; //如果是跳转，需要获取当前目录
-    classify = args["classify"]?args["classify"]:'pending'; //如果指定标准类目，则根据标准类目过滤
+    if(args["classify"]){
+        classify = args["classify"]; //如果指定标准类目，则根据标准类目过滤
+        classifyName = args["classifyName"]?args["classifyName"]:args["classify"]; //如果已指定类目名称则使用名称，否则直接显示ID     
+    }   
     loadCategories(category);
     loadPlatforms(source);//加载电商平台列表
+    showClassifyDiv();//显示状态选择栏
 
     $("#findAll").click(function(){//注册搜索事件：点击搜索全部
         tagging = $(".search input").val().trim();
@@ -63,6 +67,7 @@ var categoryTagging = "";//记录目录切换标签，tagging = categoryTagging 
 
 var source="all";//记录电商平台切换标签
 var classify = "pending";//标志是否已经入库，如果为pending则为待入库，否则接收前端传入的标准类目ID
+var classifyName = "待分类商品";//用于切换入库状态：未入库、已入库的则显示当前选中类目。从URL传入
 
 var hasMore = false;
 var cursorId = null;
@@ -140,6 +145,50 @@ function buildPlatformQuery(keyword){
     //**/
     //返回组织好的bool查询
     return q;
+}
+
+//在有传入classify时，显示状态选择导航栏，只有两个选项：待入库类目、已选择类目
+function showClassifyDiv(){
+    var navObj = $("#classifyNav");
+    var allText = "待入库商品";
+    var msg = [];
+    msg.push({//所有待入库商品
+                root:'0',
+                name:allText,
+                id:'pending'
+            });
+    msg.push({//当前选中商品
+                root:'0',
+                name:classifyName,
+                id:classify
+            });
+    $("#classifyNavDiv").css("display","block");
+    for(var i = 0 ; i < msg.length ; i++){
+        navObj.append("<li data='"+msg[i].id+"' data-tagging='"+msg[i].id+"'  style='line-height:2rem;font-size:1.2rem'>"+msg[i].name+"</li>");
+        if(classify == msg[i].id)//高亮显示当前选中的platform
+            $(navObj.find("li")[i]).addClass("showNav");
+    }
+    //注册点击事件
+    navObj.find("li").click(function(){
+        var key = $(this).attr("data");              
+        if(key == classify){//如果是当前选中的再次点击则取消高亮，选择“全部”
+            key = "pending";
+            classify = "pending";
+            changeClassify(key);//更换后更新内容
+            $(navObj.find("li")).removeClass("showNav");
+            $("#classifyNav>li:contains('"+allText+"')").addClass("showNav");
+        }else{
+            changeClassify(key);//更换后更新内容
+            $(navObj.find("li")).removeClass("showNav");
+            $(this).addClass("showNav");//不好，这个是直接通过“全部”来完成的                    
+        }
+    })    
+}
+
+function changeClassify(key){
+    classify = key;//更改当前类目
+    //categoryTagging = q;//使用当前category对应的查询更新查询字符串
+    loadData();
 }
 
 //将标准类目信息加入MUST查询 classify
