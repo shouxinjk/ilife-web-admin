@@ -150,11 +150,16 @@ function buildPlatformQuery(keyword){
 //在有传入classify时，显示状态选择导航栏，只有两个选项：待入库类目、已选择类目
 function showClassifyDiv(){
     var navObj = $("#classifyNav");
-    var allText = "待入库商品";
+    var allText = "全部";
     var msg = [];
     msg.push({//所有待入库商品
                 root:'0',
                 name:allText,
+                id:'all'
+            });    
+    msg.push({//所有待入库商品
+                root:'0',
+                name:'待入库',
                 id:'pending'
             });
     msg.push({//当前选中商品
@@ -172,8 +177,8 @@ function showClassifyDiv(){
     navObj.find("li").click(function(){
         var key = $(this).attr("data");              
         if(key == classify){//如果是当前选中的再次点击则取消高亮，选择“全部”
-            key = "pending";
-            classify = "pending";
+            key = "all";
+            classify = "all";
             changeClassify(key);//更换后更新内容
             $(navObj.find("li")).removeClass("showNav");
             $("#classifyNav>li:contains('"+allText+"')").addClass("showNav");
@@ -194,33 +199,9 @@ function changeClassify(key){
 //将标准类目信息加入MUST查询 classify
 function buildClassifyQuery(complexQuery){
     //如果传入标准类目则根据：status.classify = ready && meta.category = 标准类目
-    if(classify!='pending'){
-        console.log("build query by classify=ready.",classify);
-        /**
-        var classifyStatusReadyQuery = {
-            "nested": {
-                "path": "status",
-                "query": {
-                    "match": {
-                        "status.classify": "ready"
-                    }
-                }
-            }
-        }; 
-        complexQuery.query.bool.filter.push(classifyStatusReadyQuery);//根据classify状态过滤     
-        //**/
-        var metaCategoryQuery = {
-            "nested": {
-                "path": "meta",
-                "query": {
-                    "match": {
-                        "meta.category": classify
-                    }
-                }
-            }
-        }; 
-        complexQuery.query.bool.filter.push(metaCategoryQuery);//根据类目过滤
-    }else{//默认情况直接查询待入库条目：status.classify = pending
+    if(classify=='all'){
+        console.log("build query without classify.");
+    }else if(classify=='pending'){//默认情况直接查询待入库条目：status.classify = pending
         var classifyStatusPendingQuery = {
             "nested": {
                 "path": "status",
@@ -232,6 +213,19 @@ function buildClassifyQuery(complexQuery){
             }
         }          
         complexQuery.query.bool.filter.push(classifyStatusPendingQuery);//根据classify状态过滤
+    }else{//根据输入的classify过滤
+        console.log("build query by classify=ready.",classify);
+        var metaCategoryQuery = {
+            "nested": {
+                "path": "meta",
+                "query": {
+                    "match": {
+                        "meta.category": classify
+                    }
+                }
+            }
+        }; 
+        complexQuery.query.bool.filter.push(metaCategoryQuery);//根据类目过滤
     }
 }
 
@@ -585,8 +579,12 @@ function insertItem(){
     //console.log("orgwidth:"+orgWidth+"orgHeight:"+orgHeight+"width:"+imgWidth+"height:"+imgHeight);
     var image = "<img src='"+item.images[0]+"' width='"+imgWidth+"' height='"+imgHeight+"'/>"
     //var title = "<span class='title'><a href='info.html?category="+category+"&id="+item._key+"'>"+item.title+"</a></span>"
+    var metaCategory = "";
+    if(item.meta&&item.meta.categoryName){
+        metaCategory = "<div class='title'>"+item.meta.categoryName+"</div>"
+    }
     var title = "<div class='title'>"+item.distributor.name+" "+item.title+"</div>"
-    $("#waterfall").append("<li><div data='"+item._key+"'>" + image +title+ "</div></li>");
+    $("#waterfall").append("<li><div data='"+item._key+"'>" + image + metaCategory +title+ "</div></li>");
     num++;
 
     //注册事件
