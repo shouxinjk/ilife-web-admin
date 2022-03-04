@@ -9,3 +9,6 @@ div.title{
 	font-size:12px;
 }
 
+#platformNav ul li{
+	height:2rem;
+}

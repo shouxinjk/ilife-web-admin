@@ -742,7 +742,7 @@ function loadPlatforms(currentPlatform){
             };
             msg.unshift(all);//加到头部
             for(var i = 0 ; i < msg.length ; i++){
-                navObj.append("<li data='"+msg[i].id+"' data-tagging='"+msg[i].id+"'>"+msg[i].name+"</li>");
+                navObj.append("<li data='"+msg[i].id+"' data-tagging='"+msg[i].id+"' style='line-height:2rem;font-size:1.2rem'>"+msg[i].name+"</li>");
                 if(currentPlatform == msg[i].id)//高亮显示当前选中的platform
                     $(navObj.find("li")[i]).addClass("showNav");
             }
