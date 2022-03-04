@@ -1399,7 +1399,9 @@ function submitItemForm(item=stuff, isJump=false){
                     showHideTransition: 'fade',
                     icon: 'success'
                 });
-                window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")+(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"");
+                window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
+                    +(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"")
+                    +(stuff.meta&&stuff.meta.categoryName?"&classifyName="+stuff.meta.categoryName:"");
             }
         }
     })     
