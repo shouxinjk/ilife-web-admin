@@ -1063,6 +1063,9 @@ function publishArticle(){
                 console.log("\n=== published ===\n",res);
                 //推送到运营微信群
                 sendItemArticleToWebhook(res.id);
+                //显示预览链接
+                $("#btnPreview").attr("href",app.config.mp_api+"/archives/"+res.id);
+                $("#btnPreview").css("display","block");                
                 //显示提示
                 $.toast({
                     heading: 'Success',
