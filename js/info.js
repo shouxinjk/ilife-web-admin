@@ -1028,6 +1028,9 @@ function publishArticle(){
                 console.log("\n=== published ===\n",res);
                 //推送到运营微信群
                 sendItemArticleToWebhook(res.id);
+                //显示预览链接
+                $("#btnPreview").attr("href",app.config.mp_api+"/archives/"+res.id);
+                $("#btnPreview").css("display","block");
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1547,10 +1550,12 @@ function jump(item){//支持点击事件
         var target = item.url;
         if(item.link.web2){
             target = item.link.web2;
-            window.location.href = target;
+            //window.location.href = target;
+            window.open(target,"_blank");
         }else if(item.link.web){
             target = item.link.web;
-            window.location.href = target;
+            //window.location.href = target;
+            window.open(target,"_blank");
         }else{
             //there is no url link to jump
             //it is a QRCODE
