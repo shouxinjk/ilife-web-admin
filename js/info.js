@@ -741,8 +741,7 @@ function showRadar2(){
 var brokerQrcode = null;//存放达人二维码url
 var currentPosterScheme = null;//存放当前选中的海报模板
 //生成短连接及二维码
-/**
-function generateQRcode(){
+function generateQrcode(){
     console.log("start generate qrcode......");
     var longUrl = "https://www.biglistoflittlethings.com/ilife-web-wx/info2.html?fromBroker=system&posterId="
                         +currentPosterScheme.id+"&id="+stuff._key;//获取分享目标链接：包含itemKey及posterId
@@ -765,8 +764,8 @@ function generateQRcode(){
         setTimeout(uploadQrcode,300);//需要图片装载完成后才能获取 
     }, "POST", { "longUrl": longUrl },header);    
 }
-//**/
 
+/**
 //生成短连接及二维码
 function generateQrcode(){
     console.log("start generate qrcode......");
@@ -795,8 +794,7 @@ function generateQrcode(){
     });  
     setTimeout(uploadQrcode,1200);
 }
-
-
+//**/
 
 //上传二维码到poster服务器，便于生成使用
 function uploadQrcode(dataurl, filename){
