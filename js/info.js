@@ -804,7 +804,7 @@ function generateImage() {
     var img = canvas.get(0).toDataURL("image/png");
 
     //将二维码图片上传到fastdfs
-    uploadPngFile(img, "qrcode"+stuff._key+currentPosterScheme.id+(new Date().getTime())+".png");//文件名称以itemKey+posterId+时间戳唯一识别
+    uploadQrcode(img, "qrcode"+stuff._key+currentPosterScheme.id+(new Date().getTime())+".png");//文件名称以itemKey+posterId+时间戳唯一识别
 
     //隐藏canvas
     jQuery("#app-qrcode-box canvas").css("display","none");
