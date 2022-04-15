@@ -741,6 +741,7 @@ function showRadar2(){
 var brokerQrcode = null;//存放达人二维码url
 var currentPosterScheme = null;//存放当前选中的海报模板
 //生成短连接及二维码
+/**
 function generateQrcode(){
     console.log("start generate qrcode......");
     var longUrl = "https://www.biglistoflittlethings.com/ilife-web-wx/info2.html?fromBroker=system&posterId="
@@ -764,8 +765,8 @@ function generateQrcode(){
         setTimeout(uploadQrcode,300);//需要图片装载完成后才能获取 
     }, "POST", { "longUrl": longUrl },header);    
 }
+//**/
 
-/**
 //生成短连接及二维码
 function generateQrcode(){
     console.log("start generate qrcode......");
@@ -794,12 +795,11 @@ function generateQrcode(){
     });  
     setTimeout(uploadQrcode,1200);
 }
-//**/
 
 //上传二维码到poster服务器，便于生成使用
 function uploadQrcode(dataurl, filename){
-    dataurl = $("#app-qrcode-box img").attr("src");
-    filename = "broker-qrcode-system.png";
+    //dataurl = $("#app-qrcode-box img").attr("src");
+    //filename = "broker-qrcode-system.png";
     console.log("try to upload qrcode.",dataurl,filename);
     var formData = new FormData();
     formData.append("file", dataURLtoFile(dataurl, filename));//注意，使用files作为字段名
