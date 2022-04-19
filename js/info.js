@@ -178,7 +178,9 @@ function showContent(item){
         stuff.status.index = "pending";//提交后需要重新索引
         stuff.timestamp.inactive = new Date();//更新时间戳
         index(stuff);
-    });     
+    });    
+    //itemKey：便于检查对照
+    $("#itemkey").val(item._key); 
     //手工标注
     $("#tagging").val(item.tagging?item.tagging:"");  
     //pc推广链接
@@ -374,6 +376,8 @@ var featuredDimension = [];//客观评价维度列表
 var itemScore = {};//当前条目评分列表：手动修改后同时缓存
 var categoryScore = {};//当前条目所在类目评分列表
 var measureScores = [];//显示到grid供修改，在measure基础上增加score
+var hasItemScore = false; //记录是否已获取商品评分
+var hasCategoryScore = false; //记录是否已获取类目评分，即指定类目下商品的平均值
 function loadMeasureAndScore(){
     //根据category获取客观评价数据
     var data = {
@@ -393,7 +397,7 @@ function loadMeasureAndScore(){
     $.ajax({
         url:app.config.sx_api+"/mod/itemDimension/rest/featured-dimension",
         type:"get",
-        async:false,//同步调用
+        //async:false,//同步调用
         data:{categoryId:stuff.meta.category},
         success:function(json){
             console.log("===got featured dimension===\n",json);
@@ -404,35 +408,38 @@ function loadMeasureAndScore(){
             	itemScore[entry.id] = (entry.score&&entry.score>0)?entry.score:0.75;
             	categoryScore[entry.id] = 0.5;
             }
-        }
-    });  
+            //查询已有标注值
+            //根据itemKey获取评价结果
+            //feature = 1；dimensionType：0客观评价，1主观评价
+            //注意：由于clickhouse非严格唯一，需要取最后更新值
+            $.ajax({
+                url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=0 and itemKey='"+stuff._key+"' order by ts format JSON",
+                type:"get",
+                //async:false,//同步调用
+                //data:{},
+                headers:{
+                    "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
+                },         
+                success:function(ret){
+                    console.log("===got item score===\n",ret);
+                    for(var i=0;i<ret.rows;i++){
+                        itemScore[ret.data[i].dimensionId] = ret.data[i].score;
+                    }
+                    console.log("===assemble item score===\n",itemScore);
+                    hasItemScore = true;
+                    pupulateMeasureScore();//展示数据到界面
+                }
+            }); 
 
-    //根据itemKey获取评价结果
-    //feature = 1；dimensionType：0客观评价，1主观评价
-    //注意：由于clickhouse非严格唯一，需要取最后更新值
-    $.ajax({
-        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=0 and itemKey='"+stuff._key+"' order by ts format JSON",
-        type:"get",
-        async:false,//同步调用
-        //data:{},
-        headers:{
-            "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
-        },         
-        success:function(json){
-            console.log("===got item score===\n",json);
-            for(var i=0;i<json.rows;i++){
-                itemScore[json.data[i].dimensionId] = json.data[i].score;
-            }
-            console.log("===assemble item score===\n",itemScore);
         }
-    });  
+    });   
 
     //根据categoryId获取评价结果
     //feature = 1；dimensionType：0客观评价，1主观评价
     $.ajax({
         url:app.config.analyze_api+"?query=select dimensionId,avg(score) as score from ilife.info where feature=1 and dimensionType=0 and categoryId='"+stuff.meta.category+"' group by dimensionId format JSON",
         type:"get",
-        async:false,//同步调用
+        //async:false,//同步调用
         //data:{},
         headers:{
             "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
@@ -443,24 +450,32 @@ function loadMeasureAndScore(){
                 categoryScore[json.data[i].dimensionId] = json.data[i].score;
             }
             console.log("===assemble category score===\n",categoryScore);
+            hasCategoryScore = true;//设置以获取类目评分
+            pupulateMeasureScore();//显示到界面
         }
     }); 	
 
-    //组装measureScore
-    for(var i=0;i<featuredDimension.length;i++){
-    	var measureScore = featuredDimension[i];
-    	measureScore.score = itemScore[measureScore.id]?itemScore[measureScore.id]:0.75;
-    	measureScores.push(measureScore);
-    }
 
-    //显示雷达图
-	if(!stuff.media || !stuff.media["measure"])//仅在第一次进入时才尝试自动生成
-	    showRadar();//显示评价图
-
-    //显示measureScore表格提供标注功能
-    showMeasureScores();
 }
 
+//在获取维度定义、商品评分、类目评分后组装展示到界面
+function pupulateMeasureScore(){
+    if(hasItemScore && hasCategoryScore){
+        //组装measureScore
+        for(var i=0;i<featuredDimension.length;i++){
+            var measureScore = featuredDimension[i];
+            measureScore.score = itemScore[measureScore.id]?itemScore[measureScore.id]:0.75;
+            measureScores.push(measureScore);
+        }
+
+        //显示雷达图
+        if(!stuff.media || !stuff.media["measure"])//仅在第一次进入时才尝试自动生成
+            showRadar();//显示评价图
+
+        //显示measureScore表格提供标注功能
+        showMeasureScores();        
+    }
+}
 
 
 //该方法提供给推荐语模板使用，获取主观特征指标的评价结果，返回JSON：{propKey: score}
@@ -479,6 +494,8 @@ var featuredDimension2 = [];//客观评价维度列表
 var itemScore2 = {};//当前条目评分列表：手动修改后同时缓存
 var categoryScore2 = {};//当前条目所在类目评分列表
 var measureScores2 = [];//显示到grid供修改，在measure基础上增加score
+var hasItemScore2 = false; //记录是否已获取商品评分
+var hasCategoryScore2 = false; //记录是否已获取类目评分，即指定类目下商品的平均值
 var defaultVals = {
     a:0.5,b:0.15,c:0.2,d:0.15,e:0.1,x:0.4,y:0.3,z:0.3
 };//默认vals键值对
@@ -501,7 +518,7 @@ function loadMeasureAndScore2(){
     $.ajax({
         url:app.config.sx_api+"/mod/itemEvaluation/rest/markable-featured-evaluation",
         type:"get",
-        async:false,//同步调用
+        //async:false,//同步调用
         data:{categoryId:stuff.meta.category},
         success:function(json){
             console.log("===got featured evaluation===\n",json);
@@ -524,35 +541,39 @@ function loadMeasureAndScore2(){
                 itemScore2[entry.id] = (entry.score&&entry.score>0)?entry.score:defaultVals[entry.type];
                 categoryScore2[entry.id] = 0.5;//平均值直接设置为常数
             }
+            //查询获取评价值
+            //根据itemKey获取评价结果
+            //feature = 1；dimensionType：0客观评价，1主观评价
+            //注意：由于clickhouse非严格唯一，需要取最后更新值
+            $.ajax({
+                url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=1 and itemKey='"+stuff._key+"' order by ts format JSON",
+                type:"get",
+                //async:false,//同步调用
+                //data:{},
+                headers:{
+                    "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
+                },         
+                success:function(ret){
+                    console.log("===got item score===\n",ret);
+                    for(var i=0;i<ret.rows;i++){
+                        itemScore2[ret.data[i].dimensionId] = ret.data[i].score;
+                    }
+                    console.log("===assemble item evaluation score===\n",itemScore2);
+                    hasItemScore2 = true;
+                    pupulateMeasureScore2();//显示到界面
+                }
+            });  
+            
         }
     });  
 
-    //根据itemKey获取评价结果
-    //feature = 1；dimensionType：0客观评价，1主观评价
-    //注意：由于clickhouse非严格唯一，需要取最后更新值
-    $.ajax({
-        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=1 and itemKey='"+stuff._key+"' order by ts format JSON",
-        type:"get",
-        async:false,//同步调用
-        //data:{},
-        headers:{
-            "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
-        },         
-        success:function(json){
-            console.log("===got item score===\n",json);
-            for(var i=0;i<json.rows;i++){
-                itemScore2[json.data[i].dimensionId] = json.data[i].score;
-            }
-            console.log("===assemble item evaluation score===\n",itemScore2);
-        }
-    });  
 
     //根据categoryId获取评价结果
     //feature = 1；dimensionType：0客观评价，1主观评价
     $.ajax({
         url:app.config.analyze_api+"?query=select dimensionId,avg(score) as score from ilife.info where feature=1 and dimensionType=1 and categoryId='"+stuff.meta.category+"' group by dimensionId format JSON",
         type:"get",
-        async:false,//同步调用
+        //async:false,//同步调用
         //data:{},
         headers:{
             "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
@@ -563,21 +584,30 @@ function loadMeasureAndScore2(){
                 categoryScore2[json.data[i].dimensionId] = json.data[i].score;
             }
             console.log("===assemble category score===\n",categoryScore2);
+            hasCategoryScore2 = true;//设置已经获取类目平均值
+            pupulateMeasureScore2();//显示到界面
         }
     });     
 
-    //组装measureScore
-    for(var i=0;i<featuredDimension2.length;i++){
-        var measureScore = featuredDimension2[i];
-        measureScore.score = itemScore2[measureScore.id]?itemScore2[measureScore.id]:0.75;
-        measureScores2.push(measureScore);
+
+}
+
+//在获取主观维度定义、商品评分、类目评分后组装展示到界面
+function pupulateMeasureScore2(){
+    if(hasItemScore2 && hasCategoryScore2){
+        //组装measureScore
+        for(var i=0;i<featuredDimension2.length;i++){
+            var measureScore = featuredDimension2[i];
+            measureScore.score = itemScore2[measureScore.id]?itemScore2[measureScore.id]:0.75;
+            measureScores2.push(measureScore);
+        }
+
+        if(!stuff.media || !stuff.media["measure2"])//仅在第一次进入时才尝试自动生成
+            showRadar2();//显示评价图
+
+        //显示measureScore表格提供标注功能
+        showMeasureScores2();//主观评价      
     }
-
-    if(!stuff.media || !stuff.media["measure2"])//仅在第一次进入时才尝试自动生成
-        showRadar2();//显示评价图
-
-    //显示measureScore表格提供标注功能
-    showMeasureScores2();//主观评价
 }
 
 
