@@ -20,6 +20,7 @@ $(document).ready(function ()
     category = args["category"]?args["category"]:0; //如果是跳转，需要获取当前目录
     if(args["classify"]){
         classify = args["classify"]; //如果指定标准类目，则根据标准类目过滤
+        itemMetaCategory = args["classify"];
         classifyName = args["classifyName"]?args["classifyName"]:args["classify"]; //如果已指定类目名称则使用名称，否则直接显示ID     
     }   
     loadCategories(category);
@@ -68,6 +69,8 @@ var categoryTagging = "";//记录目录切换标签，tagging = categoryTagging 
 var source="all";//记录电商平台切换标签
 var classify = "pending";//标志是否已经入库，如果为pending则为待入库，否则接收前端传入的标准类目ID
 var classifyName = "待分类商品";//用于切换入库状态：未入库、已入库的则显示当前选中类目。从URL传入
+var itemMetaCategory = "";//记录meta.category。由于当前界面展示过程中classify会被改变，此处另外记录
+
 
 var hasMore = false;
 var cursorId = null;
@@ -170,9 +173,25 @@ function showClassifyDiv(){
     $("#classifyNavDiv").css("display","block");
     for(var i = 0 ; i < msg.length ; i++){
         navObj.append("<li data='"+msg[i].id+"' data-tagging='"+msg[i].id+"'  style='line-height:2rem;font-size:1.2rem'>"+msg[i].name+"</li>");
-        if(classify == msg[i].id)//高亮显示当前选中的platform
+        if(classify == msg[i].id)//高亮显示当前选中的classify
             $(navObj.find("li")[i]).addClass("showNav");
     }
+    //增加将当前界面所有商品统一加入classify分类按钮
+    if(itemMetaCategory&&itemMetaCategory.trim().length>0){
+        navObj.append("<span id='batchClassify' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>将所有条目都加入"+classifyName+"</span>");
+        //注册点击事件
+        $("#batchClassify").click(function(){//更新当前页面所有item列表的meta设置
+            items.forEach(function(item){
+                if(!item.meta)
+                    item.meta = {};
+                item.meta.category = itemMetaCategory;//注意，不能使用classify，界面在切换过程中会修改
+                item.meta.categoryName = classifyName;
+                submitItemForm(item);
+                changePlatformCategoryMapping(item);
+            });
+        });
+    }
+
     //注册点击事件
     navObj.find("li").click(function(){
         var key = $(this).attr("data");              
@@ -189,6 +208,68 @@ function showClassifyDiv(){
         }
     })    
 }
+
+//逐条更改item的meta信息：在批量修改是调用
+var totalSubmitItems = 0;
+function submitItemForm(item){
+    var data = {
+        records:[{
+            value:item
+        }]
+    };
+    $.ajax({
+        url:"http://kafka-rest.shouxinjk.net/topics/stuff",
+        type:"post",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/vnd.kafka.json.v2+json",
+            "Accept":"application/vnd.kafka.v2+json"
+        },
+        success:function(result){
+            totalSubmitItems ++;
+            console.log("submit item.[count]",totalSubmitItems);
+            siiimpleToast.message('玩命提交中，'+totalSubmitItems+'/'+items.length,{
+                  position: 'bottom|center'
+                });            
+        }
+    })     
+}
+//修改商品类目设置：将所有来源的商品类目映射添加到类目映射表
+function changePlatformCategoryMapping(item){
+    var name = "";
+    var names = [];
+    if(Array.isArray(item.category)){
+        name = item.category[item.category.length-1];
+        names = item.category;
+    }else if(item.category && item.category.trim().length>0){
+        var array = item.category.split(" ");
+        name = array[array.length-1];
+        names = array;
+    }
+    var platform_category = {
+        platform:item.source,
+        name:name,
+        categoryId:item.meta.category
+    };
+    console.log("try to commit platform category.",platform_category);
+    $.ajax({
+        url:"https://data.shouxinjk.net/ilife/a/mod/platformCategory/rest/mapping",
+        type:"post",
+        data:JSON.stringify(platform_category),//注意：不能使用JSON对象
+        //data:data,
+        headers:{
+            "Content-Type":"application/json",
+            "Accept": "application/json"
+        },
+        success:function(res){
+            console.log("upsert success.",res);
+        },
+        error:function(){
+            console.log("upsert failed.",platform_category);
+        }
+    }); 
+}
+
 
 function changeClassify(key){
     classify = key;//更改当前类目
