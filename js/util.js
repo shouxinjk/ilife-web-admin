@@ -315,3 +315,32 @@ function gethashcode() {
     var hashcode=hashCode(myRandom+timestamp.toString());
     return hashcode;
 }
+
+
+//生成UUID
+function getUUID() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
+//生成短码
+function generateShortCode(url){
+    var chars = "0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIGKLMNOPQRSTUVWXYZ".split("");
+    var hashCode = hex_md5(url);//根据原始URL等到hash
+    var codeArray = [];
+    for(var i=0;i<4;i++){//将hash值分解为4段，分别处理
+        var subStr = hashCode.substr(i*8,8);
+        //console.log("try generate hash code.",hashCode,subStr);
+        var subHexNumber = 0x3FFFFFFF & parseInt(subStr,16);//得到前30位
+        var outChars = "";
+        for(var j=0;j<6;j++){//循环获得每组6位的字符串
+            var index = 0x0000003D & subHexNumber;
+            outChars += chars[index];
+            subHexNumber = subHexNumber>>5;//每次移动5位
+        }
+        codeArray.push(outChars);
+    }
+    console.log("got short codes.",codeArray);
+    return codeArray[new Date().getTime()%4];//随机返回一个
+}

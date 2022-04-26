@@ -152,6 +152,7 @@
                         <select id="measureScheme" class="sxSelect">
                           <option value="radar">客观评价雷达图</option>
                           <option value="sunburst">客观评价树状放射图</option>
+                          <option value="mondrian">客观评价格子图</option>
                           <option value="radar2">主观评价雷达图</option>
                         </select>
                         <button id="btnMeasure" class="taggingBtn" class="btn" style="margin:0 10px;">生成图表</button>
@@ -159,6 +160,14 @@
 
                       <!-- 客观评价 -->                  
                       <!--button id="btnMeasure" class="taggingBtn">生成评价图表</button-->
+                      <!-- 蒙德里安格子图 -->     
+                      <div id="mondrianTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;">蒙德里安艺术图：</div>             
+                      <div id="mondrian">
+                      </div> 
+                      <div id="mondrianImg">
+                          <button id="saveMondrian" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
+                      </div>         
+                      <!-- 雷达图：圆形 -->                     
                       <div id="radarTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;">客观评价雷达图：</div>             
                       <div id="radar">
                       </div> 
@@ -251,6 +260,7 @@
 <script type="text/javascript" src="ext/d3/d3.min.js"></script>
 <script type="text/javascript" src="ext/d3/radarchart.js?v=1.3"></script>
 <script type="text/javascript" src="ext/d3/partition-sunburst.js?v=0.2"></script>
+<script type="text/javascript" src="ext/d3/mondrian.js?v=1.35"></script>
 <script type="text/javascript" src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
 <!--script type="text/javascript" src="ext/tag-it/js/tag-it.js"charset="utf-8"></script-->
 <script type="text/javascript" src="ext/jsgrid-1.5.3/jsgrid.min.js"></script>
@@ -260,8 +270,8 @@
 <script type="text/javascript" src="js/md5.js?v=2.6"></script>
 <script type="text/javascript" src="js/util2.js?v=2.0"></script>
 <script type="text/javascript" src="js/options.js?v=1.0"></script>
-<script type="text/javascript" src="js/common.js?v=1.0"></script>
-<script type="text/javascript" src="js/util.js?v=1.05"></script>
-<script type="text/javascript" src="js/info.js?v=2.63"></script>
+<script type="text/javascript" src="js/common.js?v=1.01"></script>
+<script type="text/javascript" src="js/util.js?v=1.06"></script>
+<script type="text/javascript" src="js/info.js?v=2.68"></script>
 <!--script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=XwNTgTOf5mYaZYhQ0OiIb6GmOHsSZWul&services=&t=20190622163250"></script-->
 </html>
