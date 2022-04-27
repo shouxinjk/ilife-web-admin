@@ -206,12 +206,9 @@ function showContent(item){
             console.log("now start commit index.",stuff);
             index(stuff);
         }else{
-            $.toast({
-                heading: 'Error',
-                text: '类目、推荐语和推广链接不能为空',
-                showHideTransition: 'fade',
-                icon: 'error'
-            })
+            siiimpleToast.message('类目、推荐语和推广链接不能为空',{
+              position: 'bottom|center'
+            });            
         }
     }); 
     //删除按钮：点击后更改状态：inactive
@@ -1325,12 +1322,9 @@ function publishArticle(){
                 $("#btnPreview").css("display","block");
                 $("#sendWebhookArticle").css("display","block");
                 //显示提示
-                $.toast({
-                    heading: 'Success',
-                    text: '更新成功',
-                    showHideTransition: 'fade',
-                    icon: 'success'
-                });                
+                siiimpleToast.message('更新成功',{
+                  position: 'bottom|center'
+                });              
                 //更新到stuff
                 if(!stuff.article)
                     stuff.article={};
@@ -1362,11 +1356,8 @@ function publishArticle(){
                 $("#btnPreview").css("display","block");    
                 $("#sendWebhookArticle").css("display","block");            
                 //显示提示
-                $.toast({
-                    heading: 'Success',
-                    text: '发布成功',
-                    showHideTransition: 'fade',
-                    icon: 'success'
+                siiimpleToast.message('发布成功',{
+                  position: 'bottom|center'
                 });                
                 //更新到stuff
                 if(!stuff.article)
@@ -1406,6 +1397,9 @@ function sendItemArticleToWebhook(articleId=''){
         },        
         success:function(res){
             console.log("\n=== webhook message sent. ===\n",res);
+            siiimpleToast.message('欧耶，发送成功',{
+              position: 'bottom|center'
+            }); 
         }
     });     
 }
@@ -1656,7 +1650,7 @@ function getLocationByAddress(address){
             text: '地址为空，不能获取坐标信息',
             showHideTransition: 'fade',
             icon: 'error'
-        });
+        });        
         return;
     }
    
@@ -1729,12 +1723,9 @@ function submitItemForm(item=stuff, isJump=false){
         },
         success:function(result){
             if(isJump){
-                $.toast({
-                    heading: 'Success',
-                    text: '更新成功',
-                    showHideTransition: 'fade',
-                    icon: 'success'
-                });
+                siiimpleToast.message('更新完成',{
+                      position: 'bottom|center'
+                    });
                 window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
                     +(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"")
                     +(stuff.meta&&stuff.meta.categoryName?"&classifyName="+stuff.meta.categoryName:"");
@@ -1764,12 +1755,9 @@ function batchUpdateStuffCategory(item){
         },
         success:function(result){
             console.log("已更新所有同类目Stuff",result);
-            $.toast({
-                heading: 'Success',
-                text: '已更新所有同类目Stuff',
-                showHideTransition: 'fade',
-                icon: 'success'
-            });
+            siiimpleToast.message('已更新所有同类目商品',{
+                  position: 'bottom|center'
+                });
         }
     });
 }
@@ -1829,12 +1817,9 @@ function batchUpdatePlatformCategories(item){
         },
         success:function(res){
             console.log("upsert success.",res);
-            $.toast({
-                heading: 'Success',
-                text: '已更新所有标准类目相同的Stuff',
-                showHideTransition: 'fade',
-                icon: 'success'
-            });
+            siiimpleToast.message('已更新所有同类目商品',{
+                  position: 'bottom|center'
+                });            
         },
         error:function(){
             console.log("upsert failed.",platform_category);
