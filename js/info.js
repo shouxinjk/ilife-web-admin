@@ -1483,7 +1483,7 @@ function requestPoster(scheme,xBroker,xItem,xUser){
                 if(!stuff.poster)
                     stuff.poster = {};
                 stuff.poster[scheme.id] = res.url;//以schemeId作为键值存储poster
-                sendItemMaterialToWebhook("海报",res.url);//发送海报到企业微信群
+                //sendItemMaterialToWebhook("海报",res.url);//发送海报到企业微信群：确定后手动选择发送，不自动发送，减少信息量
                 submitItemForm();//提交修改
                 //显示到界面
                 var showPoster = true;
