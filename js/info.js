@@ -47,6 +47,34 @@ $(document).ready(function ()
     }
     //显示tabs
     $( "#tabs" ).tabs();
+
+    //注册图片发送到运营群事件：蒙德里安图片
+    $("#sendWebhookMondrian").click(function(e){
+        var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
+        var imgUrl = $("#"+id+"Img img").attr("src");
+        if(imgUrl && imgUrl.length>0)
+            sendItemMaterialToWebhook(" 蒙德里安照片",imgUrl);//发送到企业微信群
+    });
+    //注册图片发送到运营群事件：雷达图
+    $("#sendWebhookRadar").click(function(e){
+        var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
+        var imgUrl = $("#"+id+"Img img").attr("src");
+        if(imgUrl && imgUrl.length>0)
+            sendItemMaterialToWebhook(" 评价结果",imgUrl);//发送到企业微信群
+    });
+    //注册图片发送到运营群事件：评价放射图
+    $("#sendWebhookSunburst").click(function(e){
+        var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
+        var imgUrl = $("#"+id+"Img img").attr("src");
+        if(imgUrl && imgUrl.length>0)
+            sendItemMaterialToWebhook(" 评价指标",imgUrl);//发送到企业微信群
+    });  
+    //注册图片发送到运营群事件：海报
+    $("#sendWebhookPoster").click(function(e){
+        var imgUrl = $("#poster img").attr("src");
+        if(imgUrl && imgUrl.length>0)
+            sendItemMaterialToWebhook(" 海报",imgUrl);//发送到企业微信群
+    });      
 });
 
 var _sxdebug = true;
@@ -259,15 +287,23 @@ function showContent(item){
     if(item.media && item.media.measure){
         $("#radarImg").empty();
         $("#radarImg").append("<img style='object-fill:cover;width:100%' src='"+item.media.measure+"'/>");
+        $("#radarTitle").css("display","block");
     }
+    if(item.media && item.media.mondrian){
+        $("#mondrianImg").empty();
+        $("#mondrianImg").append("<img style='object-fill:cover;width:100%' src='"+item.media.mondrian+"'/>");
+        $("#mondrianTitle").css("display","block");
+    }    
     if(item.media && item.media["measure-scheme"]){
         $("#sunburstImg").empty();
         $("#sunburstImg").append("<img style='object-fill:cover;width:100%' src='"+item.media["measure-scheme"]+"'/>");
+        $("#sunburstTitle").css("display","block");
     }
     //显示主观评价结果图表
     if(item.media && item.media.measure2){
         $("#radarImg2").empty();
         $("#radarImg2").append("<img style='object-fill:cover;width:100%' src='"+item.media.measure2+"'/>");
+        $("#radarTitle2").css("display","block");
     }    
 
     //显示海报
@@ -289,18 +325,18 @@ function showContent(item){
         //显示评价树
         if(stuff.meta && stuff.meta.category){
             if("radar"==chartType){
-                $("#radarImg").empty();//隐藏原有图片
+                $("#radarImg").css("display","none");//隐藏原有图片
                 showRadar();//显示客观评价图
             }else if("mondrian"==chartType){//生成蒙德里安格子图
                 $("#mondrian").empty();
-                $("#mondrianImg").empty();//隐藏原有图片
+                $("#mondrianImg").css("display","none");//隐藏原有图片
                 showDimensionMondrian();
             }else if("sunburst"==chartType){
-                $("#sunburstImg").empty();//隐藏原有图片
+                $("#sunburstImg").css("display","none");//隐藏原有图片
                 //showDimensionBurst();//显示评价规则
                 showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
             }else if("radar2"==chartType){
-                $("#radarImg2").empty();//隐藏原有图片
+                $("#radarImg2").css("display","none");//隐藏原有图片
                 showRadar2();//显示主观评价图
             }else{
                 //do nothing
@@ -1039,9 +1075,8 @@ function uploadPngFile(dataurl, filename, mediaKey){
                     stuff.media = {};
                 stuff.media[mediaKey] = app.config.poster_api+"/"+data.url;
                 submitItemForm();//提交修改
-                //如果是蒙德里安图片则推送到企业微信
-                if("mondrian"==mediaKey)
-                    sendItemMaterialToWebhook(" 蒙德里安照片",app.config.poster_api+"/"+data.url);//发送到企业微信群
+                //更新图片地址，便于推送到微信群
+                $("#"+mediaKey+"Img img").attr("src",app.config.poster_api+"/"+data.url);
             }
          }
      }); 
@@ -1102,6 +1137,7 @@ function dataURLtoFile(dataurl, filename) {
 
 
 //生成文案列表：请求文案列表，请求后直接生成文案
+var advicesShowed = [];
 function requestAdviceScheme(){
     //获取模板列表
     $.ajax({
@@ -1119,6 +1155,22 @@ function requestAdviceScheme(){
             }
             if(total==0){
                 $("#advice").append("<div>糟糕，还没有可用的文案哦~~</div>");//提示缺少文案定义
+            }
+            //支持前端手动添加的advice
+            if(stuff.advice){
+                for(key in stuff.advice){
+                    if(advicesShowed.indexOf(key)<0 && stuff.advice[key].indexOf(":::")>0){//已经显示的就不再显示
+                        //如果是达人推荐语，其结构为 达人昵称:::推荐语
+                        var brokerAdvice = stuff.advice[key].split(":::");
+                        //将文案显示到界面
+                        $("#advice").append("<blockquote class='big-quote'><div class='prop-key'><strong style='font-size:12px;line-height:18px;'>"+brokerAdvice[0]+":</strong>&nbsp;&nbsp;<a id='sendWebhook"+key+"' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div><div id='advice"+key+"' class='prop-row' style='font-size:12px;'>"+brokerAdvice[1]+"</div></blockquote>");  
+                        //注册发送到企业微信群事件
+                        $("#sendWebhook"+key).click(function(e){
+                            var schemeId = $(this).attr("id").replace(/sendWebhook/g,"");
+                            sendItemAdviceToWebhook($("#advice"+schemeId).text());
+                        });                         
+                    }
+                }
             }
         }
     });  
@@ -1158,7 +1210,13 @@ function requestAdvice(scheme,xBroker,xItem,xUser){
         return;//这里出错了就别玩了
     }
     //将文案显示到界面
-    $("#advice").append("<blockquote class='big-quote'><div class='prop-key'><strong>"+scheme.name+"</strong></div><div id='advice"+scheme.id+"' class='prop-row'>"+xAdvice+"</div></blockquote>");    
+    $("#advice").append("<blockquote class='big-quote'><div class='prop-key'><strong style='font-size:12px;line-height:18px;'>"+scheme.name+":</strong>&nbsp;&nbsp;<a id='sendWebhook"+scheme.id+"' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div><div id='advice"+scheme.id+"' class='prop-row' style='font-size:12px;'>"+xAdvice+"</div></blockquote>");  
+    advicesShowed.push(scheme.id);
+    //注册发送到企业微信群事件
+    $("#sendWebhook"+scheme.id).click(function(e){
+        var schemeId = $(this).attr("id").replace(/sendWebhook/g,"");
+        sendItemAdviceToWebhook($("#advice"+schemeId).text());
+    });  
     //更新文案到stuff
     if(!stuff.advice)
         stuff.advice={};
@@ -1302,7 +1360,7 @@ function publishArticle(){
     }
 }
 
-//发送信息到运营群：运营团队收到新内容提示
+//发送图文信息到运营群：运营团队收到新内容提示
 function sendItemArticleToWebhook(articleId=''){
     //推动图文内容到企业微信群，便于转发
     var msg = {
@@ -1320,7 +1378,7 @@ function sendItemArticleToWebhook(articleId=''){
         };
 
     //推送到企业微信
-    console.log("\n===try to sent webhook msg. ===\n");
+    console.log("\n===try to sent webhook msg. ===\n",msg);
     $.ajax({
         url:app.config.wechat_cp_api+"/wework/ilife/notify-cp-company-broker",
         type:"post",
@@ -1459,7 +1517,7 @@ function sendItemMaterialToWebhook(title,posterImgUrl){
         };
 
     //推送到企业微信
-    console.log("\n===try to sent webhook msg. ===\n");
+    console.log("\n===try to sent webhook msg. ===\n",msg);
     $.ajax({
         url:app.config.wechat_cp_api+"/wework/ilife/notify-cp-company-broker",
         type:"post",
@@ -1469,10 +1527,41 @@ function sendItemMaterialToWebhook(title,posterImgUrl){
         },        
         success:function(res){
             console.log("\n=== webhook message sent. ===\n",res);
+            siiimpleToast.message('欧耶，已经发送到运营群',{
+                  position: 'bottom|center'
+                }); 
         }
     });     
 }
 
+//发送文字信息到企业微信：用于发送推荐语等
+//由运营人员选择后选择发送
+function sendItemAdviceToWebhook(text){
+    var msg =    {
+                    "msgtype": "text",
+                    "text": {
+                        "content": text
+                    }
+               };
+
+    //推送到企业微信
+    console.log("\n===try to sent webhook msg. ===\n",msg);
+    $.ajax({
+        url:app.config.wechat_cp_api+"/wework/ilife/notify-cp-company-broker",
+        type:"post",
+        data:JSON.stringify(msg),
+        headers:{
+            "Content-Type":"application/json"
+        },        
+        success:function(res){
+            console.log("\n=== webhook message sent. ===\n",res);
+            console.log("submit item.[count]",totalSubmitItems);
+            siiimpleToast.message('欧耶，发送成功',{
+                  position: 'bottom|center'
+                });             
+        }
+    });     
+}
 
 //图形化显示客观评价树
 function showDimensionBurst(){
