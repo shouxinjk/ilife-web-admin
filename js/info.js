@@ -48,33 +48,47 @@ $(document).ready(function ()
     //显示tabs
     $( "#tabs" ).tabs();
 
+    //注册发送到运营群事件：发送商品URL链接，以图文形式发送
+    $("#sendWebhookItem").click(function(e){
+        sendItemMaterialToWebhook(" 商品推荐",
+            "https://www.biglistoflittlethings.com/ilife-web-wx/info2.html?id="+stuff._key,
+            stuff.logo?stuff.logo:stuff.images[0]
+            );//发送到企业微信群
+    });
     //注册图片发送到运营群事件：蒙德里安图片
     $("#sendWebhookMondrian").click(function(e){
         var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
         var imgUrl = $("#"+id+"Img img").attr("src");
         if(imgUrl && imgUrl.length>0)
-            sendItemMaterialToWebhook(" 蒙德里安照片",imgUrl);//发送到企业微信群
+            sendItemMaterialToWebhook(" 蒙德里安照片",imgUrl,imgUrl);//发送到企业微信群
     });
     //注册图片发送到运营群事件：雷达图
     $("#sendWebhookRadar").click(function(e){
         var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
         var imgUrl = $("#"+id+"Img img").attr("src");
         if(imgUrl && imgUrl.length>0)
-            sendItemMaterialToWebhook(" 评价结果",imgUrl);//发送到企业微信群
+            sendItemMaterialToWebhook(" 评价结果",imgUrl,imgUrl);//发送到企业微信群
     });
     //注册图片发送到运营群事件：评价放射图
     $("#sendWebhookSunburst").click(function(e){
         var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
         var imgUrl = $("#"+id+"Img img").attr("src");
         if(imgUrl && imgUrl.length>0)
-            sendItemMaterialToWebhook(" 评价指标",imgUrl);//发送到企业微信群
+            sendItemMaterialToWebhook(" 评价指标",imgUrl,imgUrl);//发送到企业微信群
     });  
     //注册图片发送到运营群事件：海报
     $("#sendWebhookPoster").click(function(e){
         var imgUrl = $("#poster img").attr("src");
         if(imgUrl && imgUrl.length>0)
-            sendItemMaterialToWebhook(" 海报",imgUrl);//发送到企业微信群
-    });      
+            sendItemMaterialToWebhook(" 海报",imgUrl,imgUrl);//发送到企业微信群
+    });  
+    //注册图片发送到运营群事件：图文内容
+    $("#sendWebhookArticle").click(function(e){
+        var articleId = $("#btnPreview").attr("data-resId");
+        if(articleId && articleId.length>0)
+            sendItemArticleToWebhook(articleId);//发送到企业微信群
+    });     
+        
 });
 
 var _sxdebug = true;
@@ -1304,10 +1318,12 @@ function publishArticle(){
             success:function(res){
                 console.log("\n=== published ===\n",res);
                 //推送到运营微信群
-                sendItemArticleToWebhook(res.id);
+                //sendItemArticleToWebhook(res.id);//改为 手动发送
                 //显示预览链接
                 $("#btnPreview").attr("href",app.config.mp_api+"/archives/"+res.id);
+                $("#btnPreview").attr("data-resId",res.id);
                 $("#btnPreview").css("display","block");
+                $("#sendWebhookArticle").css("display","block");
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1339,10 +1355,12 @@ function publishArticle(){
             success:function(res){
                 console.log("\n=== published ===\n",res);
                 //推送到运营微信群
-                sendItemArticleToWebhook(res.id);
+                //sendItemArticleToWebhook(res.id);//改为 手动发送
                 //显示预览链接
                 $("#btnPreview").attr("href",app.config.mp_api+"/archives/"+res.id);
-                $("#btnPreview").css("display","block");                
+                $("#btnPreview").attr("data-resId",res.id);
+                $("#btnPreview").css("display","block");    
+                $("#sendWebhookArticle").css("display","block");            
                 //显示提示
                 $.toast({
                     heading: 'Success',
@@ -1446,6 +1464,9 @@ function requestPoster(scheme,xBroker,xItem,xUser){
     }
     if(!isOk){//如果不满足则直接跳过
         console.log("condition not satisifed. ignore.");
+        siiimpleToast.message('条件不满足，请检查海报引用的图片是否已生成。',{
+              position: 'bottom|center'
+            }); 
         return;       
     }
 
@@ -1483,7 +1504,7 @@ function requestPoster(scheme,xBroker,xItem,xUser){
                 if(!stuff.poster)
                     stuff.poster = {};
                 stuff.poster[scheme.id] = res.url;//以schemeId作为键值存储poster
-                //sendItemMaterialToWebhook("海报",res.url);//发送海报到企业微信群：确定后手动选择发送，不自动发送，减少信息量
+                //sendItemMaterialToWebhook("海报",res.url,res.url);//发送海报到企业微信群：确定后手动选择发送，不自动发送，减少信息量
                 submitItemForm();//提交修改
                 //显示到界面
                 var showPoster = true;
@@ -1500,7 +1521,7 @@ function requestPoster(scheme,xBroker,xItem,xUser){
 
 //发送信息到运营群：运营团队收到新内容提示
 //发送卡片：其链接为图片地址
-function sendItemMaterialToWebhook(title,posterImgUrl){
+function sendItemMaterialToWebhook(title,url,imgUrl){
     //推动图文内容到企业微信群，便于转发
     var msg = {
             "msgtype": "news",
@@ -1509,8 +1530,8 @@ function sendItemMaterialToWebhook(title,posterImgUrl){
                    {
                        "title" : stuff.distributor.name + (stuff.meta&&stuff.meta.categoryName?stuff.meta.categoryName:'')+ title,
                        "description" : stuff.title,
-                       "url" : posterImgUrl,
-                       "picurl" : posterImgUrl
+                       "url" : url,
+                       "picurl" : imgUrl
                    }
                 ]
             }

@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="ext/jstree/theme/default/style.min.css">
     <link rel="stylesheet" type="text/css" href="ext/cascade-select/cascader.css?v=0.7">   
     <link type="text/css" rel="stylesheet" href="ext/jsgrid-1.5.3/jsgrid.min.css" /> 
+    <link type="text/css" rel="stylesheet" href="ext/siiimple-toast-master/style.css" /> 
 	  <link type="text/css" rel="stylesheet" href="ext/jsgrid-1.5.3/jsgrid-theme.min.css" />
     <link rel="stylesheet" type="text/css" href="ext/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="ext/star-rating-svg/star-rating-svg.css">  
@@ -87,7 +88,7 @@
                   <!-- 标注 -->
                   <div id="baseInfo" class="tagging">
                       <div>
-                          <label>itemKey</label>
+                          <label>itemKey</label> &nbsp;&nbsp;<a id='sendWebhookItem' href='#' style='font-size:12px;color:blue;'>发到运营群</a>
                           <input id="itemkey" readonly value=""/>
                       </div>                     
                       <div>
@@ -225,7 +226,7 @@
                         <select id="articleScheme" class="sxSelect"></select>
                         <button id="btnArticle" class="taggingBtn" style="display:none;">生成图文</button>
                         <button id="btnPublish" class="taggingBtn" style="display:none;">发布内容</button>
-                        <a id="btnPreview" style="display:none;fond-size:14px;color:blue;line-height:28px;margin-left:10px;" href="#" target="_new">预览</a>
+                        <a id="btnPreview" style="display:none;fond-size:14px;color:blue;line-height:28px;margin-left:10px;" href="#" target="_new">预览</a>&nbsp;&nbsp;<a id='sendWebhookArticle' href='#' style='display:none;fond-size:14px;color:blue;line-height:28px;margin-left:10px;'>发到运营群</a>
                       </div>
                       <div id="articleTitle" class="prop-key" style="width:90%;display:none;margin-bottom:5px;">以下图文将发送到流量主:</div> 
                       <div class="tagging">
@@ -274,6 +275,6 @@
 <script type="text/javascript" src="js/options.js?v=1.0"></script>
 <script type="text/javascript" src="js/common.js?v=1.01"></script>
 <script type="text/javascript" src="js/util.js?v=1.06"></script>
-<script type="text/javascript" src="js/info.js?v=2.74"></script>
+<script type="text/javascript" src="js/info.js?v=2.76"></script>
 <!--script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=XwNTgTOf5mYaZYhQ0OiIb6GmOHsSZWul&services=&t=20190622163250"></script-->
 </html>
