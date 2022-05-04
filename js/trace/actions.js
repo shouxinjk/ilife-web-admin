@@ -272,7 +272,7 @@ function insertItem(){
 
     var html = "";
     html += "<div class='sxColumn "+(num%2==1?'sxColumn-grey':'')+"' style='width:10%'>"+new Date(item.timestamp).toISOString().slice(0, 19).replace("T"," ")+"</div>"
-    html += "<div class='sxColumn "+(num%2==1?'sxColumn-grey':'')+"' style='width:10%'>"+item.user.nickName+"</div>"
+    html += "<div class='sxColumn "+(num%2==1?'sxColumn-grey':'')+"' style='width:10%'>"+(item.user?item.user.nickName:"-")+"</div>"
     html += "<div class='sxColumn "+(num%2==1?'sxColumn-grey':'')+"' style='width:5%'>"+actionTypes[item.action]+"</div>"
     html += "<div class='sxColumn "+(num%2==1?'sxColumn-grey':'')+"' style='width:60%'>"+item.item.title+"</div>"
     html += "<div class='sxColumn "+(num%2==1?'sxColumn-grey':'')+"' style='width:5%'>"+(item.item.price.currency?item.item.price.currency:'￥')+item.item.price.sale+"</div>"
