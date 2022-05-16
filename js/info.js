@@ -1330,6 +1330,11 @@ function publishArticle(){
                     stuff.article={};
                 stuff.article[templateId]=res.id;
                 submitItemForm();//提交修改
+
+                //提交文章到 索引
+                var doc = createArticleDoc(res.id);
+                indexArticleDoc(doc);
+
             }
         }); 
     }else{//否则生成新的文章，并且更新stuff.article
@@ -1364,9 +1369,97 @@ function publishArticle(){
                     stuff.article={};
                 stuff.article[templateId]=res.id;
                 submitItemForm();//提交修改
+
+                //提交文章到 索引
+                var doc = createArticleDoc(res.id);
+                indexArticleDoc(doc);                
             }
         }); 
     }
+}
+
+//建立Article索引doc
+function createArticleDoc(articleId){
+
+    console.log("try to build article doc.",articleId);
+    var articleUrl = app.config.mp_api+"/archives/"+articleId;
+
+    var templateId = $("#articleScheme").val();//获取当前文章对应的ID
+    var postTitle = $("#postTitle").val();//获取发布内容标题
+    //var postContent = $("#article").html();//使用html作为内容
+    var postContent = tinyMCE.activeEditor.getContent();
+    console.log(" got content from editor.",postContent);
+
+    //合并tags及tagging
+    var tags  = [];
+    if(stuff.tags){
+        stuff.tags.forEach(function(item){
+            if(tags.indexOf(item)<0)tags.push(item);
+        });
+    }
+    if(stuff.tagging){
+        stuff.tagging.forEach(function(item){
+            if(tags.indexOf(item)<0)tags.push(item);
+        });
+    }
+    if(stuff.meta && stuff.meta.categoryName && stuff.meta.categoryName.trim().length > 0){
+        var metaCategory = stuff.meta.categoryName.split("/");
+        metaCategory.forEach(function(item){
+            if(tags.indexOf(item)<0)tags.push(item);
+        });
+    }
+
+    //装配索引文档
+    var doc = {
+        source: stuff.source,
+        type: "item" ,
+        itemkey: stuff._key,   //单品直接用itemKey，列表用boardId
+        template: templateId ,                               
+        url: articleUrl,
+        title: postTitle,
+        summary: stuff.summary + " "+ postContent, //一股脑扔进去就可以
+        tags: tags,
+        price: {
+            currency: stuff.price.currency,
+            bid: stuff.price.bid?stuff.price.bid:stuff.price.sale,
+            sale: stuff.price.sale,
+            profit: stuff.profit.order?stuff.profit.order:0,
+            profit2: stuff.profit.team?stuff.profit.team:0
+        },                
+        logo: stuff.logo?stuff.logo:stuff.images[0],
+        distributor: {
+            country: stuff.distributor.country?sutff.distributor.country:"",
+            language: stuff.distributor.language?stuff.distributor.language:"",
+            name: stuff.distributor.name
+        },
+        timestamp: new Date()
+    }
+
+    return doc;
+}
+
+//提交索引。将整个文档提交ES建立所以，便于检索物料
+function indexArticleDoc(doc){
+    console.log("try to index article doc.",doc);
+    var data = {
+        records:[{
+            value:doc
+        }]
+    };
+    $.ajax({
+        url:"http://kafka-rest.shouxinjk.net/topics/article",
+        type:"post",
+        data:JSON.stringify(data),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/vnd.kafka.json.v2+json",
+            "Accept":"application/vnd.kafka.v2+json"
+        },
+        success:function(result){
+            siiimpleToast.message('图文索引已提交',{
+                  position: 'bottom|center'
+                });
+        }
+    }) 
 }
 
 //发送图文信息到运营群：运营团队收到新内容提示
