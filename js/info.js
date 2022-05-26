@@ -52,7 +52,7 @@ $(document).ready(function ()
     $("#sendWebhookItem").click(function(e){
         sendItemMaterialToWebhook(" 商品推荐",
             "https://www.biglistoflittlethings.com/ilife-web-wx/info2.html?id="+stuff._key,
-            stuff.logo?stuff.logo:stuff.images[0]
+            stuff.logo?stuff.logo:stuff.images[0].replace(/\.avif/,'');
             );//发送到企业微信群
     });
     //注册图片发送到运营群事件：蒙德里安图片
@@ -142,8 +142,8 @@ function showContent(item){
     // 标签
     //正文及图片
     for(var i=0;i<item.images.length;i++){
-        $("#gallery").append("<li><img src='" + item.images[i] + "' alt=''/></li>");//加载图片幻灯
-        $("#content").append("<img src='" + item.images[i] + "'/>");//正文图片
+        $("#gallery").append("<li><img src='" + item.images[i].replace(/\.avif/,'') + "' alt=''/></li>");//加载图片幻灯
+        $("#content").append("<img src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
     }
 
     //初始化图片幻灯
@@ -1426,7 +1426,7 @@ function createArticleDoc(articleId){
             profit: stuff.profit.order?stuff.profit.order:0,
             profit2: stuff.profit.team?stuff.profit.team:0
         },                
-        logo: stuff.logo?stuff.logo:stuff.images[0],
+        logo: stuff.logo?stuff.logo:stuff.images[0].replace(/\.avif/,''),
         distributor: {
             country: stuff.distributor.country?sutff.distributor.country:"",
             language: stuff.distributor.language?stuff.distributor.language:"",
@@ -1473,7 +1473,7 @@ function sendItemArticleToWebhook(articleId=''){
                        "title" : stuff.distributor.name + (stuff.meta&&stuff.meta.categoryName?stuff.meta.categoryName:'')+"单品图文上新",
                        "description" : stuff.title,
                        "url" : "https://www.biglistoflittlethings.com/ilife-web-wx/content.html?id="+articleId,//将跳转到content.html附加浏览用户的formUser、fromBroker信息
-                       "picurl" : stuff.logo?stuff.logo:stuff.images[0]
+                       "picurl" : stuff.logo?stuff.logo:stuff.images[0].replace(/\.avif/,'')
                    }
                 ]
             }
