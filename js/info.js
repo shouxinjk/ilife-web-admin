@@ -52,7 +52,7 @@ $(document).ready(function ()
     $("#sendWebhookItem").click(function(e){
         sendItemMaterialToWebhook(" 商品推荐",
             "https://www.biglistoflittlethings.com/ilife-web-wx/info2.html?id="+stuff._key,
-            stuff.logo?stuff.logo:stuff.images[0].replace(/\.avif/,'');
+            stuff.logo?stuff.logo:stuff.images[0].replace(/\.avif/,'')
             );//发送到企业微信群
     });
     //注册图片发送到运营群事件：蒙德里安图片
