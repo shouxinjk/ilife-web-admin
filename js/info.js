@@ -190,11 +190,14 @@ function showContent(item){
             lon:parseFloat(lon)
         };
 
+        //logo
+        var logo = $("#logo").val()?$("#logo").val():"";
         //标签和链接
         var tagging = $("#tagging").val()?$("#tagging").val():"";
         var web2link = $("#web2link").val()?$("#web2link").val():"";
         var wap2link = $("#wap2link").val()?$("#wap2link").val():"";
         if(stuff.meta && stuff.meta.category && tagging.trim().length>0 && ((web2link.trim().length>0 && wap2link.trim().length>0) || item.link.qrcode)) {
+            stuff.logo = logo;
             stuff.tagging = tagging;
             stuff.link.web2 = web2link;
             stuff.link.wap2 = wap2link;
@@ -220,6 +223,8 @@ function showContent(item){
     });    
     //itemKey：便于检查对照
     $("#itemkey").val(item._key); 
+    //logo图片
+    $("#logo").val(item.logo?item.logo:item.images[0]);     
     //手工标注
     $("#tagging").val(item.tagging?item.tagging:"");  
     //pc推广链接
