@@ -79,11 +79,12 @@
               <!-- tabs -->
               <div id="tabs" style="margin-top:5px">
                   <ul>
-                    <li><a href="#baseInfo">商品标注</a></li>
-                    <li><a href="#measureInfo">评价图表</a></li>
-                    <li><a href="#posterInfo">分享海报</a></li>
-                    <li><a href="#adviceInfo">推荐文案</a></li>
-                    <li><a href="#articleInfo">图文内容</a></li>
+                    <li><a href="#baseInfo" style="font-size:13px;">商品标注</a></li>
+                    <li><a href="#measureInfo" style="font-size:13px;">评价图表</a></li>
+                    <li><a href="#posterInfo" style="font-size:13px;">分享海报</a></li>
+                    <li><a href="#adviceInfo" style="font-size:13px;">推荐文案</a></li>
+                    <li><a href="#articleInfo" style="font-size:13px;">图文内容</a></li>
+                    <li><a href="#wxGroupInfo" style="font-size:13px;">微信推送</a></li>
                   </ul>
                   <!-- 标注 -->
                   <div id="baseInfo" class="tagging">
@@ -239,7 +240,12 @@
                           <!--label for="article">内容</label-->
                           <textarea id="article" rows="120" style="min-height:600px;"></textarea> 
                       </div>                  
-                  </div>                  
+                  </div>    
+                  <div id="wxGroupInfo">
+                      <div id="wxGroupTitle" class="prop-key" style="width:90%;margin:10px 0px;">请选择微信群:&nbsp;&nbsp;<a id='sendWxGroup' href='#' style='font-size:12px;color:blue;'>推送到微信</a></div> 
+                      <div id="wxGroup" style="width:100%;">
+                      </div>                         
+                  </div>                                 
               </div>            
         </div>
     </div>
@@ -279,6 +285,6 @@
 <script type="text/javascript" src="js/options.js?v=1.0"></script>
 <script type="text/javascript" src="js/common.js?v=1.01"></script>
 <script type="text/javascript" src="js/util.js?v=1.06"></script>
-<script type="text/javascript" src="js/info.js?v=2.83"></script>
+<script type="text/javascript" src="js/info.js?v=2.86"></script>
 <!--script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=XwNTgTOf5mYaZYhQ0OiIb6GmOHsSZWul&services=&t=20190622163250"></script-->
 </html>

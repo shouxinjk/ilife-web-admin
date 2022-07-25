@@ -21,6 +21,7 @@ $(document).ready(function ()
     var category = args["category"]; //当前目录
     var id = args["id"];//当前内容
     showAllItems = args["showAllItems"]?true:false;//传入该参数表示需要index页面显示全部内容
+    
     //判断屏幕大小，如果是小屏则跳转
     /**
     if(width<800){
@@ -39,6 +40,8 @@ $(document).ready(function ()
     loadNavigationCategories(category);
     loadItem(id);   
     //loadHosts(id);//管理页面不需要加载关注列表
+
+    loadWxGroups(args["brokerId"]);//加载可用微信群
 
     //判断是否是嵌入模式：hideHeaderBar
     hideHeaderBar = args["hideHeaderBar"]?true:false;
@@ -132,6 +135,52 @@ var cascader = null;//级联选择器实例
 
 //评价指标列表
 var measureScheme = [];//每一项包含name weight children
+
+//根据达人ID加载活跃微信群
+function loadWxGroups(brokerId){
+    console.log("try to load wx groups by brokerId.",brokerId);
+    $.ajax({
+        url:app.config.sx_api+"/wx/wxGroup/rest/listByBrokerId?brokerId="+brokerId,
+        type:"get",        
+        success:function(ret){
+            console.log("===got wx groups===\n",ret);
+            //加载到界面供选择
+            ret.forEach(function(wxgroup){
+                console.log("===got wx groups===\n",wxgroup);
+                $("#wxGroup").append("<div style='line-height:20px;'><input id='wxg"+wxgroup.id+"' name='wxgroups' type='checkbox' data-name='"+wxgroup.name+"' value='"+wxgroup.id+"' style='vertical-align:middle;' checked/><label for='wxg"+wxgroup.id+"' style='margin-top:5px;margin-left:2px;'>"+wxgroup.name+"</label></div>");
+            });
+        }
+    }); 
+    //注册点击事件
+    $("#sendWxGroup").click(function(){
+        var selectedWxGroups = [];
+        $("input[name='wxgroups']:checked").each(function(){
+            selectedWxGroups.push($(this).val());
+            saveFeaturedItem(getUUID(), brokerId, "wechat", $(this).val(), $(this).attr("data-name"), "item", stuff._key, JSON.stringify(stuff), "pending");
+        });   
+        console.log("selected wxgroups.",selectedWxGroups);
+        siiimpleToast.message('哦耶，推送已安排',{
+          position: 'bottom|center'
+        });                
+    });
+}
+//存储featured item到ck
+function saveFeaturedItem(eventId, brokerId, groupType, groupId, groupName,itemType, itemKey, jsonStr, status){
+  var q = "insert into ilife.features values ('"+eventId+"','"+brokerId+"','"+groupType+"','"+groupId+"','"+groupName+"','"+itemType+"','"+itemKey+"','"+jsonStr+"','"+status+"',now())";
+  console.log("try to save featured item.",q);
+  jQuery.ajax({
+    url:app.config.analyze_api+"?query="+q,
+    type:"post",
+    //data:{},
+    headers:{
+      "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
+    },         
+    success:function(json){
+      console.log("===featured item saved.===\n",json);
+    }
+  });    
+}
+
 
 //将item显示到页面
 function showContent(item){
