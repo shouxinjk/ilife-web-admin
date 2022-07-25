@@ -169,7 +169,7 @@ function saveFeaturedItem(eventId, brokerId, groupType, groupId, groupName,itemT
   var q = "insert into ilife.features values ('"+eventId+"','"+brokerId+"','"+groupType+"','"+groupId+"','"+groupName+"','"+itemType+"','"+itemKey+"','"+jsonStr+"','"+status+"',now())";
   console.log("try to save featured item.",q);
   jQuery.ajax({
-    url:app.config.analyze_api+"?query="+q,
+    url:app.config.analyze_api+"?query="+encodeURIComponent(q),
     type:"post",
     //data:{},
     headers:{
