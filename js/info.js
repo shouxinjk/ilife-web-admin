@@ -149,6 +149,11 @@ function loadWxGroups(brokerId){
                 console.log("===got wx groups===\n",wxgroup);
                 $("#wxGroup").append("<div style='line-height:20px;'><input id='wxg"+wxgroup.id+"' name='wxgroups' type='checkbox' data-name='"+wxgroup.name+"' value='"+wxgroup.id+"' style='vertical-align:middle;' checked/><label for='wxg"+wxgroup.id+"' style='margin-top:5px;margin-left:2px;'>"+wxgroup.name+"</label></div>");
             });
+            //没有微信群则提示
+            if(ret.length==0){
+                $("#wxGroup").append("<div style='line-height:20px;font-size:12px;color:red;'>请先建立微信群，并设置手动推送任务</div>");
+                $("#sendWxGroup").css("display","none");
+            }
         }
     }); 
     //注册点击事件
@@ -158,10 +163,18 @@ function loadWxGroups(brokerId){
             selectedWxGroups.push($(this).val());
             saveFeaturedItem(getUUID(), brokerId, "wechat", $(this).val(), $(this).attr("data-name"), "item", stuff._key, JSON.stringify(stuff), "pending");
         });   
-        console.log("selected wxgroups.",selectedWxGroups);
-        siiimpleToast.message('哦耶，推送已安排',{
-          position: 'bottom|center'
-        });                
+        if(selectedWxGroups.length>0){
+            console.log("selected wxgroups.",selectedWxGroups);
+            siiimpleToast.message('哦耶，推送已安排',{
+              position: 'bottom|center'
+            });             
+        }else{
+            console.log("no group selected.");
+            siiimpleToast.message('请选择微信群先~~',{
+              position: 'bottom|center'
+            });             
+        }
+               
     });
 }
 //存储featured item到ck
