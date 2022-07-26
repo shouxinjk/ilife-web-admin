@@ -23,6 +23,9 @@ $(document).ready(function ()
         itemMetaCategory = args["classify"];
         classifyName = args["classifyName"]?args["classifyName"]:args["classify"]; //如果已指定类目名称则使用名称，否则直接显示ID     
     }   
+    if(args["brokerId"]){//记录达人信息
+        brokerId = args["brokerId"];
+    }
     loadCategories(category);
     loadPlatforms(source);//加载电商平台列表
     showClassifyDiv();//显示状态选择栏
@@ -53,6 +56,8 @@ $(document).ready(function ()
 
 var columnWidth = 300;//默认宽度300px
 var columnMargin = 5;//默认留白5px
+
+var brokerId = "";//记录达人信息
 
 var loading = false;
 var dist = 500;
@@ -671,7 +676,7 @@ function insertItem(){
     //注册事件
     $("div[data='"+item._key+"']").click(function(){
         //跳转到详情页
-        window.location.href = "info.html?category="+category+"&id="+item._key+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
+        window.location.href = "info.html?category="+category+"&id="+item._key+"&brokerId="+brokerId+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"");
     });
 
     // 表示加载结束
