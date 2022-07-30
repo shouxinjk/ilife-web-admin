@@ -153,6 +153,9 @@ function loadWxGroups(brokerId){
             if(ret.length==0){
                 $("#wxGroup").append("<div style='line-height:20px;font-size:12px;color:red;'>请先建立微信群，并设置手动推送任务</div>");
                 $("#sendWxGroup").css("display","none");
+            }else{
+                $("#btnCheckAll").css("display","block");
+                $("#btnUncheckAll").css("display","block");                
             }
         }
     }); 
@@ -173,9 +176,17 @@ function loadWxGroups(brokerId){
             siiimpleToast.message('请选择微信群先~~',{
               position: 'bottom|center'
             });             
-        }
-               
+        }     
     });
+    //选中全部
+    $("#btnCheckAll").click(function(){
+        $("input[name='wxgroups']").prop("checked","true"); 
+    });
+    //取消选中
+    $("#btnUncheckAll").click(function(){
+        $("input[name='wxgroups']").removeAttr("checked"); 
+    });  
+
 }
 //存储featured item到ck
 function saveFeaturedItem(eventId, brokerId, groupType, groupId, groupName,itemType, itemKey, jsonStr, status){
