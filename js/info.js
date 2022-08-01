@@ -229,7 +229,14 @@ function showContent(item){
 
     //右侧：
     //摘要：价格：优惠价与原价/评分/评价数；匹配度指数
-
+    
+    //达人佣金
+    var profitHtml = htmlItemProfitTags(stuff);
+    if(profitHtml.trim().length>0){
+        $("#profit").html(profitHtml);
+        $("#profit").toggleClass("profit-hide",false);
+        $("#profit").toggleClass("profit-show",true);
+    }
     //购买按钮
     /*
     if(item.distributor && item.distributor.images && item.distributor.images.length>0)$("#shopping .summary").append("<img src='"+item.distributor.images[0]+"'/>");
@@ -489,6 +496,125 @@ function showContent(item){
     //*/
     //广告
     //TODO
+}
+
+
+//佣金
+function htmlItemProfitTags(item){
+    var profitTags = "";
+    //因为已经确认过是达人，这里直接显示即可
+    console.log("\n\n==profit==",item.profit);
+    if(item.profit&&item.profit.type=="3-party"){//如果已经存在则直接加载
+      if(item.profit&&item.profit.order){
+          profitTags += "<span class='profitTipOrder'>店返</span><span class='itemTagProfitOrder' href='#'>¥"+(parseFloat((Math.floor(item.profit.order*10)/10).toFixed(1)))+"</span>";
+          if(item.profit&&item.profit.team&&item.profit.team>0.1)profitTags += "<span class='profitTipTeam'>团返</span><span class='itemTagProfitTeam' href='#'>¥"+(parseFloat((Math.floor(item.profit.team*10)/10).toFixed(1)))+"</span>";
+      }else if(item.profit&&item.profit.credit&&item.profit.credit>0){
+          profitTags += "<span class='profitTipCredit'>积分</span><span class='itemTagProfitCredit' href='#'>"+(parseFloat((Math.floor(item.profit.credit*10)/10).toFixed(0)))+"</span>";
+      }
+    }else if(item.profit && item.profit.type=="2-party"){//如果是2方分润则请求计算
+        profitTags = "<div id='profit"+item._key+"' class='itemTags profit-hide'></div>";
+        getItemProfit2Party(item);
+    }else{//表示尚未计算。需要请求计算得到该item的profit信息
+        profitTags = "<div id='profit"+item._key+"' class='itemTags profit-hide'></div>";
+        getItemProfit(item);
+    }
+
+    return profitTags;
+}
+
+//查询特定条目的佣金信息。返回order/team/credit三个值
+function getItemProfit(item) {
+    var data={
+        source:item.source,
+        price:item.price.sale,
+        category:item.categoryId?item.categoryId:""
+    };
+    console.log("try to query item profit",data);
+    util.AJAX(app.config.sx_api+"/mod/commissionScheme/rest/profit", function (res) {
+        console.log("got profit info.",item,res);
+        var showProfit = false;
+        var html = "";
+        if (res.order) {//店返
+            html += "<span class='profitTipOrder'>店返</span><span class='itemTagProfitOrder' href='#'>¥"+(parseFloat((Math.floor(res.order*10)/10).toFixed(1)))+"</span>";
+            if(res.team && res.team>0.1){//过小的团返不显示
+                html += "<span class='profitTipTeam'>团返</span><span class='itemTagProfitTeam' href='#'>¥"+(parseFloat((Math.floor(res.team*10)/10).toFixed(1)))+"</span>";
+            }
+        }else if(res.credit&&res.credit>0){//如果没有现金则显示积分
+            html += "<span class='profitTipCredit'>积分</span><span class='itemTagProfitCredit' href='#'>"+(parseFloat((Math.floor(res.credit*10)/10).toFixed(0)))+"</span>";
+        }else{//这里应该是出了问题，既没有现金也没有积分
+            console.log("===error===\nnothing to show.",item,res);
+        }
+        //显示到界面
+        if(html.trim().length>0){
+            $("#profit"+item._key).html(html);
+            $("#profit"+item._key).toggleClass("profit-hide",false);
+            $("#profit"+item._key).toggleClass("profit-show",true);
+        }
+        //更新到item
+        if(item.profit==null){
+          item.profit={};
+        }        
+        item.profit.order = res.order;
+        item.profit.team = res.team;
+        item.profit.credit = res.credit;
+        item.profit.type = "3-party";   
+        updateItem(item);       
+    },"GET",data);
+}
+
+//查询佣金。2方分润。返回order/team/credit三个值
+function getItemProfit2Party(item) {
+    var data={
+        source:item.source,
+        price:item.price.sale,
+        amount:item.profit.amount?item.profit.amount:0,
+        category:item.categoryId?item.categoryId:""
+    };
+    console.log("try to query item profit -- 2 party",data);
+    util.AJAX(app.config.sx_api+"/mod/commissionScheme/rest/profit-2-party", function (res) {
+        console.log("got profit info.",item,res);
+        var showProfit = false;
+        var html = "";
+        if (res.order) {//店返
+            html += "<span class='profitTipOrder'>店返</span><span class='itemTagProfitOrder' href='#'>¥"+(parseFloat((Math.floor(res.order*10)/10).toFixed(1)))+"</span>";
+            if(res.team && res.team>0.1){//过小的团返不显示
+                html += "<span class='profitTipTeam'>团返</span><span class='itemTagProfitTeam' href='#'>¥"+(parseFloat((Math.floor(res.team*10)/10).toFixed(1)))+"</span>";
+            }
+        }else if(res.credit&&res.credit>0){//如果没有现金则显示积分
+            html += "<span class='profitTipCredit'>积分</span><span class='itemTagProfitCredit' href='#'>"+(parseFloat((Math.floor(res.credit*10)/10).toFixed(0)))+"</span>";
+        }else{//这里应该是出了问题，既没有现金也没有积分
+            console.log("===error===\nnothing to show.",item,res);
+        }
+        //显示到界面
+        if(html.trim().length>0){
+            $("#profit"+item._key).html(html);
+            $("#profit"+item._key).toggleClass("profit-hide",false);
+            $("#profit"+item._key).toggleClass("profit-show",true);
+        }
+        //更新到item
+        if(item.profit==null){
+          item.profit={};
+        }        
+        item.profit.order = res.order;
+        item.profit.team = res.team;
+        item.profit.credit = res.credit;
+        item.profit.type = "3-party";   
+        updateItem(item);      
+    },"GET",data);
+}
+//更新item信息。只用于更新profit
+function updateItem(item) {
+    var header={
+        "Content-Type":"application/json",
+        Authorization:"Basic aWxpZmU6aWxpZmU="
+    };   
+    var url = app.config.data_api +"/_api/document/my_stuff/"+item._key;
+    if (app.globalData.isDebug) console.log("Info2::updateItem update item.",item);
+    util.AJAX(url, function (res) {
+      if (app.globalData.isDebug) console.log("Info2::updateItem update item finished.", res);
+      //需要重新提交索引， 否则首页无法显示
+      index(item);
+    }, "PATCH", item, header);
 }
 
 //该方法提供给推荐语模板使用，获取特征指标的评价结果，返回JSON：{propKey: score}
