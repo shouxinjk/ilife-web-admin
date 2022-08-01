@@ -182,7 +182,7 @@ function showClassifyDiv(){
             $(navObj.find("li")[i]).addClass("showNav");
     }
     //增加将当前界面所有商品统一加入classify分类按钮
-    if(itemMetaCategory&&itemMetaCategory.trim().length>0){
+    if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
         navObj.append("<span id='batchClassify' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>将所有条目都加入"+classifyName+"</span>");
         //注册点击事件
         $("#batchClassify").click(function(){//更新当前页面所有item列表的meta设置
