@@ -48,6 +48,31 @@ $(document).ready(function ()
     if(hideHeaderBar){
         $(".header").css("display","none");
     }
+
+    $("#findAll").click(function(){//注册搜索事件：点击搜索全部
+        var tagging = $(".search input").val().trim();
+        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true";
+    }); 
+    //回车直接执行搜索
+    $(document).keyup(function(event){                   
+        if(event.keyCode ==13){                      
+            var tagging = $(".search input").val().trim();
+            window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true";                
+        }                  
+    });     
+    $("#findByPrice").click(function(){//注册搜索事件：byPrice
+        var tagging = $(".search input").val().trim();
+        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byPrice";
+    }); 
+    $("#findByRank").click(function(){//注册搜索事件：byRank
+        var tagging = $(".search input").val().trim();
+        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byRank";
+    });
+    $("#findByProfit").click(function(){//注册搜索事件：byProfit
+        var tagging = $(".search input").val().trim();
+        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byProfit";
+    });        
+
     //显示tabs
     $( "#tabs" ).tabs();
 
@@ -229,7 +254,7 @@ function showContent(item){
 
     //右侧：
     //摘要：价格：优惠价与原价/评分/评价数；匹配度指数
-    
+
     //达人佣金
     var profitHtml = htmlItemProfitTags(stuff);
     if(profitHtml.trim().length>0){

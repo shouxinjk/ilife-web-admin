@@ -26,6 +26,10 @@ $(document).ready(function ()
     if(args["brokerId"]){//记录达人信息
         brokerId = args["brokerId"];
     }
+    if(args["tagging"]&&args["tagging"].trim().length>0){//接收搜索关键词
+        tagging = args["tagging"].trim();
+        $("#searchTxt").val(tagging);
+    }    
     loadCategories(category);
     loadPlatforms(source);//加载电商平台列表
     showClassifyDiv();//显示状态选择栏
@@ -35,7 +39,14 @@ $(document).ready(function ()
         //window.location.href="index.html?keyword="+tagging;
         loadData();
     }); 
-
+    //回车直接执行搜索
+    $(document).keyup(function(event){                   
+        if(event.keyCode ==13){                      
+            tagging = $(".search input").val().trim();
+            //window.location.href="index.html?keyword="+tagging;
+            loadData();                 
+        }                  
+    }); 
     //加载filter并高亮
     loadFilters(filter);    
 
