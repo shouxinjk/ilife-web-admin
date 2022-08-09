@@ -172,7 +172,7 @@ function loadWxGroups(brokerId){
             //加载到界面供选择
             ret.forEach(function(wxgroup){
                 console.log("===got wx groups===\n",wxgroup);
-                $("#wxGroup").append("<div style='line-height:20px;'><input id='wxg"+wxgroup.id+"' name='wxgroups' type='checkbox' data-name='"+wxgroup.name+"' value='"+wxgroup.id+"' style='vertical-align:middle;' checked/><label for='wxg"+wxgroup.id+"' style='margin-top:5px;margin-left:2px;'>"+wxgroup.name+"</label></div>");
+                $("#wxGroup").append("<div style='line-height:20px;'><input id='wxg"+wxgroup.id+"' name='wxgroups' type='checkbox' data-name='"+wxgroup.name+"' value='"+wxgroup.id+"' style='vertical-align:middle;' checked/><label for='wxg"+wxgroup.id+"' style='margin-top:5px;margin-left:2px;'>"+wxgroup.name +" "+ wxgroup.type +" / "+wxgroup.members +"人 / "+wxgroup.broker.nickname+ "</label></div>");
             });
             //没有微信群则提示
             if(ret.length==0){
