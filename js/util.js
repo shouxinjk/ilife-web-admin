@@ -25,7 +25,10 @@ app.config={
     poster_options:{//海报基础参数配置
                   accessKey: "ApfrIzxCoK1DwNZO",
                   secretKey: "EJCwlrnv6QZ0PCdvrWGi"
-                }
+                },
+    ck_options:{//clickhouse基础配置
+      auth: "Basic aWxpZmU6aWxpZmU="
+    }
 };
 
 
