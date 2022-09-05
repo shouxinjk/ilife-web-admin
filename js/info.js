@@ -780,6 +780,16 @@ var hasCategoryScore2 = false; //记录是否已获取类目评分，即指定�
 var defaultVals = {
     a:0.5,b:0.15,c:0.2,d:0.15,e:0.1,x:0.4,y:0.3,z:0.3
 };//默认vals键值对
+var dimNames2 = {
+    a:"功能/功效",
+    b:"质量/保障",
+    c:"服务/售后",
+    d:"品牌/认同",
+    e:"稀缺性/个性化",
+    x:"经济成本",
+    y:"文化成本",
+    z:"社会成本"
+};
 function loadMeasureAndScore2(){
     //根据category获取主观评价scheme
     var data = {
@@ -920,6 +930,7 @@ function showRadar(){
     for(var i=0;i<featuredDimension.length;i++){
         var dimId = featuredDimension[i].id;
         var dimName = featuredDimension[i].name;
+        
         itemArray.push({
             axis:dimName,
             value:itemScore[dimId]?itemScore[dimId]:0.5
@@ -1133,7 +1144,9 @@ function showRadar2(){
     var categoryArray = [];
     for(var i=0;i<featuredDimension2.length;i++){
         var dimId = featuredDimension2[i].id;
-        var dimName = featuredDimension2[i].type;
+        //var dimName = featuredDimension2[i].type;
+        var dimName = dimNames2[featuredDimension2[i].type];//采用友好名称
+        console.log("got featured measure2 name",dimName);
         itemArray.push({
             axis:dimName,
             value:itemScore2[dimId]?itemScore2[dimId]:0.5
@@ -2596,7 +2609,8 @@ function showMeasureScores2(){
         tmpScores2[measureScores2[i].id] = measureScores2[i];
         var html = "";
         html += "<div style='display:flex;flex-direction:row;flex-wrap:nowrap;margin:10px 0;'>";
-        html += "<div style='width:120px;line-height:24px;'>"+measureScores2[i].type+"</div>";
+        //html += "<div style='width:120px;line-height:24px;'>"+measureScores2[i].type+"</div>";
+        html += "<div style='width:120px;line-height:24px;'>"+dimNames2[measureScores2[i].type]+"</div>"; //显示友好名称
         html += "<div style='width:60px;text-align:center;line-height:24px;' id='mscore2"+measureScores2[i].id+"'>"+measureScores2[i].score+"</div>";
         html += "<div style='width:70%' id='score2_"+measureScores2[i].id+"'></div>";
         html += "</div>";
