@@ -2391,7 +2391,7 @@ function patchCategoryTags(categoryId){
 function loadProps(categoryId){
     //根据categoryId获取所有measure清单，字段包括name、property
     $.ajax({
-        url:"https://data.shouxinjk.net/ilife/a/mod/measure/measures?category="+categoryId,
+        url:"https://data.shouxinjk.net/ilife/a/mod/measure/measures?cascade=true&category="+categoryId,
         type:"get",
         data:{},
         success:function(items){
