@@ -64,15 +64,7 @@ $(document).ready(function ()
     }
 
     //加载事件：切换视图链接
-    $("#btnChangeLayout").click(function(){
-        var param = "index-metrics.html";
-        param += "?classify="+(classify?classify:"");
-        param += "&classifyName="+(classifyName?classifyName:"-");
-        param += "&brokerId="+(brokerId?brokerId:"");
-        param += "&tagging="+(tagging?tagging:"");
-        console.log("try to change layout.",param);
-        window.href.location = param;
-    });
+    setChangeLayoutUrl();
 });
 
 var columnWidth = 300;//默认宽度300px
@@ -174,6 +166,17 @@ function buildPlatformQuery(keyword){
     //**/
     //返回组织好的bool查询
     return q;
+}
+
+//设置切换视图链接，需要带上参数
+function setChangeLayoutUrl(){
+    var param = "index-metrics.html";
+    param += "?classify="+(classify?classify:"");
+    param += "&classifyName="+(classifyName?classifyName:"-");
+    param += "&brokerId="+(brokerId?brokerId:"");
+    param += "&tagging="+(tagging?tagging:"");
+    console.log("try to change layout.",param);
+    $("#btnChangeLayout").attr("href",param);
 }
 
 //在有传入classify时，显示状态选择导航栏，只有两个选项：待入库类目、已选择类目
