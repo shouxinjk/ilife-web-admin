@@ -9,9 +9,12 @@ $(document).ready(function ()
     rootFontSize = rootFontSize >16 ? 16:rootFontSize;//最大为18px
     oHtml.style.fontSize = rootFontSize+ "px";
     //计算图片流宽度：根据屏幕宽度计算，最小显示2列
+    /**
     if(width < 2*columnWidth){//如果屏幕不能并排2列，则调整图片宽度
         columnWidth = (width-columnMargin*4)/2;//由于每一个图片左右均留白，故2列有4个留白
     }
+    //**/
+    columnWidth = width - columnMargin*4 ;//只显示一列
     var args = getQuery();//获取参数
     $('#waterfall').NewWaterfall({
         width: columnWidth,
@@ -167,6 +170,7 @@ function buildPlatformQuery(keyword){
     //返回组织好的bool查询
     return q;
 }
+
 
 //显示视图切换按钮：加载带参数链接
 function showChangeLayoutLink(){
@@ -676,7 +680,8 @@ function loadMore(){
 function insertItem(){
     // 加载内容
     var item = items[num-1];
-    var imgWidth = columnWidth-2*columnMargin;//注意：改尺寸需要根据宽度及留白计算，例如宽度为360，左右留白5，故宽度为350
+    //var imgWidth = columnWidth-2*columnMargin;//注意：改尺寸需要根据宽度及留白计算，例如宽度为360，左右留白5，故宽度为350
+    var imgWidth = 100;//固定为100
     var imgHeight = random(50, 300);//随机指定初始值
     //计算图片高度
     var img = new Image();
@@ -721,16 +726,58 @@ function insertItem(){
     }else{
         profitTags = "<div id='profit"+item._key+"' class='itemTags profit-hide'></div>";
     }     
-    
+
+    //属性列表
+    var propTags = "<div class='title' style='line-height:12px;font-size:10px;'>";//显示原始属性键值对
+    if(item.props && item.props instanceof Array){ //兼容采用数组存储的条目
+        item.props.forEach(function(obj){
+            Object.keys(obj).forEach(function(key){
+                propTags += key +": "+obj[key]+"<br/>";
+            });
+        });
+    }else if(item.props){
+        Object.keys(item.props).forEach(function(key){
+            propTags += key +": "+item.props[key]+"<br/>";
+        });
+    }
+    propTags += "</div>";
+
+    //商品tag列表
+    var itemTags = "<div class='title' style='font-size:10px;'>";//显示原始属性键值对
+    if(item.tags){
+        Object.keys(item.tags).forEach(function(key){
+            itemTags += "<span style='padding:1px 2px;margin:1px;background-color:#8BCE2D;border-radius:5px;color:#fff;'>"+item.tags[key]+"</span>";
+        });
+    }
+    //手动标注tag列表
+    if(item.tagging){
+        item.tagging.split(" ").forEach(function(tag){
+            itemTags += "<span style='padding:1px 2px;margin:1px;background-color:#E85552;border-radius:5px;color:#fff;'>"+tag+"</span>";
+        });
+    }
+    itemTags += "</div>";
 
 
     var metaCategory = "";
     if(item.meta&&item.meta.categoryName){
         metaCategory = "<div class='title'>"+item.meta.categoryName+"</div>"
     }
-    var title = "<div class='title'>"+item.distributor.name+" "+item.title+"</div>"
-    $("#waterfall").append("<li><div data='"+item._key+"'>" + image + metaCategory +title+profitTags +highlights+ "</div></li>");
+    var title = "<div class='title' style='font-size:12px;line-height: 14px;'>"+item.distributor.name+" "+item.title+"</div>"
+    $("#waterfall").append("<li><div data='"+item._key+"' style='display:flex;flex-direct:row;width:100%;height:100px;'>" 
+        + "<div style='width:10%;'>"+ image +"</div>"
+        + "<div style='width:25%;margin:auto 0px;'>"+ metaCategory + profitTags + highlights + title +"</div>"
+        + "<div style='width:20%;margin:auto 0px;'>" + propTags + "</div>"
+        + "<div style='width:15%;margin:auto 0px;'>" + itemTags + "</div>"
+        + "<div style='width:15%;margin:auto 0px;' id='measure-"+item._key+"'></div>"
+        + "<div style='width:15%;margin:auto 0px;' id='eval-"+item._key+"'></div>"
+        + "</div></li>");
     num++;
+
+    //装载评价数据：查询后动态添加
+    if(item.meta&&item.meta.category){
+      loadMeasureSchemes(item);
+      loadEvaluationSchemes(item);
+    }
 
     //注册事件
     $("div[data='"+item._key+"']").click(function(){
@@ -742,6 +789,124 @@ function insertItem(){
     loading = false;
 }
 
+
+//加载客观评价指标
+function loadMeasureSchemes(stuff){
+    //获取类目下的特征维度列表
+    $.ajax({
+        url:app.config.sx_api+"/mod/itemDimension/rest/featured-dimension",
+        type:"get",
+        //async:false,//同步调用
+        data:{categoryId:stuff.meta.category},
+        success:function(featuredDimension){
+            console.log("===got featured dimension===\n",featuredDimension);
+            loadMeasureScores(stuff,featuredDimension);
+        }
+    });  
+}
+//加载指定item的评分
+function loadMeasureScores(stuff,featuredDimension){
+    var itemScore = {};
+    //根据itemKey获取评价结果
+    //feature = 1；dimensionType：0客观评价，1主观评价
+    //注意：由于clickhouse非严格唯一，需要取最后更新值
+    $.ajax({
+        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=0 and itemKey='"+stuff._key+"' order by ts format JSON",
+        type:"get",
+        //async:false,//同步调用
+        //data:{},
+        headers:{
+            "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
+        },         
+        success:function(json){
+            console.log("===got item score===\n",json);
+            for(var i=0;i<json.rows;i++){
+                itemScore[json.data[i].dimensionId] = json.data[i].score;
+            }
+            console.log("===assemble item score===\n",itemScore);
+            showMeasureScores(stuff,featuredDimension,itemScore);
+        }
+    });   
+}
+//显示客观评价得分
+function showMeasureScores(stuff,featuredDimension,itemScore){
+    var colors = ['#8b0000', '#dc143c', '#ff4500', '#ff6347', '#1e90ff','#00ffff','#40e0d0','#9acd32','#32cd32','#228b22'];
+    //准备评分表格：根据评价维度逐行显示
+    featuredDimension.forEach(function(dimension){
+      var html  = '<div id="mscore-'+stuff._key+dimension.id+'" data-init="true"></div>';//以itemKey+dimensionId为唯一识别
+      var score = itemScore[dimension.id]?itemScore[dimension.id]*10:0;//如果没有则不显示
+      var colorIndex = Math.round(score);//四舍五入取整
+      if(colorIndex>9)colorIndex=9;
+      $("#measure-"+stuff._key).append(html);
+      $('#mscore-'+stuff._key+dimension.id).LineProgressbar({
+                percentage: score,
+                title:dimension.name,
+                unit:'/10',
+                fillBackgroundColor:colors[colorIndex],
+                //animation:false
+            });    
+    });   
+    $("#measure-"+stuff._key).css("display","block");
+}
+
+//加载主观评价
+function loadEvaluationSchemes(stuff){
+    //获取类目下的特征维度列表
+    $.ajax({
+        url:app.config.sx_api+"/mod/itemEvaluation/rest/featured-evaluation",
+        type:"get",
+        //async:false,//同步调用
+        data:{categoryId:stuff.meta.category},
+        success:function(featuredDimension){
+            console.log("===got featured dimension===\n",featuredDimension);
+            loadEvaluationScores(stuff,featuredDimension);
+        }
+    });  
+}
+//加载指定item的评分
+function loadEvaluationScores(stuff,featuredDimension){
+    var itemScore = {};
+    //根据itemKey获取评价结果
+    //feature = 1；dimensionType：0客观评价，1主观评价
+    //注意：由于clickhouse非严格唯一，需要取最后更新值
+    $.ajax({
+        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=1 and itemKey='"+stuff._key+"' order by ts format JSON",
+        type:"get",
+        //async:false,//同步调用
+        //data:{},
+        headers:{
+            "Authorization":"Basic ZGVmYXVsdDohQG1AbjA1"
+        },         
+        success:function(json){
+            console.log("===got item score===\n",json);
+            for(var i=0;i<json.rows;i++){
+                itemScore[json.data[i].dimensionId] = json.data[i].score;
+            }
+            console.log("===assemble item score===\n",itemScore);
+            showEvaluationScores(stuff,featuredDimension,itemScore);
+        }
+    });   
+}
+//显示客观评价得分
+function showEvaluationScores(stuff,featuredDimension,itemScore){
+    var colors = ['#8b0000', '#dc143c', '#ff4500', '#ff6347', '#1e90ff','#00ffff','#40e0d0','#9acd32','#32cd32','#228b22'];
+    //准备评分表格：根据评价维度逐行显示
+    featuredDimension.forEach(function(dimension){
+      var html  = '<div id="escore-'+stuff._key+dimension.id+'" data-init="true"></div>';//以itemKey+dimensionId为唯一识别
+      var score = itemScore[dimension.id]?itemScore[dimension.id]*10:0;//如果没有则不显示
+      var colorIndex = Math.round(score);//四舍五入取整
+      if(colorIndex>9)colorIndex=9;
+      $("#eval-"+stuff._key).append(html);
+      $('#escore-'+stuff._key+dimension.id).LineProgressbar({
+                percentage: score,
+                title:dimension.name,
+                unit:'/10',
+                fillBackgroundColor:colors[colorIndex],
+                //animation:false
+            });    
+    });   
+    $("#eval-"+stuff._key).css("display","block");
+}
 
 //查询佣金。2方分润。返回order/team/credit三个值
 function getItemProfit2Party(item) {
