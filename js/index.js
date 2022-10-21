@@ -70,6 +70,7 @@ $(document).ready(function ()
         param += "&classifyName="+(classifyName?classifyName:"-");
         param += "&brokerId="+(brokerId?brokerId:"");
         param += "&tagging="+(tagging?tagging:"");
+        console.log("try to change layout.",param);
         window.href.location = param;
     });
 });
