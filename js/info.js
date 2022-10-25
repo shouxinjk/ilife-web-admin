@@ -51,26 +51,26 @@ $(document).ready(function ()
 
     $("#findAll").click(function(){//注册搜索事件：点击搜索全部
         var tagging = $(".search input").val().trim();
-        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true";
+        window.location.href=indexPage+"?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true";
     }); 
     //回车直接执行搜索
     $(document).keyup(function(event){                   
         if(event.keyCode ==13){                      
             var tagging = $(".search input").val().trim();
-            window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true";                
+            window.location.href=indexPage+"?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true";                
         }                  
     });     
     $("#findByPrice").click(function(){//注册搜索事件：byPrice
         var tagging = $(".search input").val().trim();
-        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byPrice";
+        window.location.href=indexPage+"?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byPrice";
     }); 
     $("#findByRank").click(function(){//注册搜索事件：byRank
         var tagging = $(".search input").val().trim();
-        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byRank";
+        window.location.href=indexPage+"?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byRank";
     });
     $("#findByProfit").click(function(){//注册搜索事件：byProfit
         var tagging = $(".search input").val().trim();
-        window.location.href="index.html?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byProfit";
+        window.location.href=indexPage+"?tagging="+tagging+"&classify=all&categoryName=-&showAllItems=true&filter=byProfit";
     });        
 
     //显示tabs
@@ -120,14 +120,14 @@ $(document).ready(function ()
     //判断是从index.html进入还是从index-metrics.html进入
     if (document.referrer && document.referrer.indexOf("index-metrics")>=0  ) {
         // 表示从index-metrics而来
-        fromIndexMetrics = true; 
+        indexPage = "index-metrics.html";
     }        
         
 });
 
 var _sxdebug = true;
 
-var fromIndexMetrics = false;
+var indexPage = "index.html";
 
 var hideHeaderBar = true;
 var showAllItems = false;
@@ -2071,12 +2071,7 @@ function submitItemForm(item=stuff, isJump=false){
                 siiimpleToast.message('更新完成',{
                       position: 'bottom|center'
                     });
-                if(fromIndexMetrics)
-                    window.location.href="index-metrics.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
-                    +(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"")
-                    +(stuff.meta&&stuff.meta.categoryName?"&classifyName="+stuff.meta.categoryName:"");
-                else
-                    window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
+                window.location.href=indexPage+"?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
                     +(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"")
                     +(stuff.meta&&stuff.meta.categoryName?"&classifyName="+stuff.meta.categoryName:"");
             }
@@ -2313,7 +2308,7 @@ function loadNavigationCategories(currentCategory){
             navObj.find("li").click(function(){
                 var key = $(this).attr("data");
                 //跳转到首页
-                window.location.href = "index.html?category="+key;
+                window.location.href = indexPage+"?category="+key;
             })
         }
     })    
