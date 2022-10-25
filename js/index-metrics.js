@@ -694,7 +694,7 @@ function insertItem(){
     var image = "<img src='"+item.images[0]+"' width='"+imgWidth+"' height='"+imgHeight+"'/>"
     //var title = "<span class='title'><a href='info.html?category="+category+"&id="+item._key+"'>"+item.title+"</a></span>"
     
-    var tagTmpl = "<a class='itemTag' href='index.html?keyword=__TAGGING'>__TAG</a>";
+    var tagTmpl = "<a class='itemTag' href='index-metrics.html?keyword=__TAGGING'>__TAG</a>";
    var highlights = "<div class='itemTags'>";
     highlights += "<a class='itemTagPrice' href='#'>"+(item.price.currency?item.price.currency:"¥")+item.price.sale+"</a>";
     if(item.price.coupon>0){
@@ -1012,7 +1012,7 @@ function shownomore(flag){
     $("#findMoreBtn").toggleClass("findMoreBtn-show",true);
     //注册跳转事件：在某些情况下，搜索不到，直接回到首页，不带参数搜索
     $("#findMoreBtn").click(function(){
-      window.location.href = "index.html";
+      window.location.href = "index-metrics.html";
     });    
   }else{
     $("#findMoreBtn").toggleClass("findMoreBtn-hide",true);

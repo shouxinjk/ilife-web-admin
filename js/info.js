@@ -115,11 +115,19 @@ $(document).ready(function ()
         var articleId = $("#btnPreview").attr("data-resId");
         if(articleId && articleId.length>0)
             sendItemArticleToWebhook(articleId);//发送到企业微信群
-    });     
+    });  
+
+    //判断是从index.html进入还是从index-metrics.html进入
+    if (document.referrer && document.referrer.indexOf("index-metrics")>=0  ) {
+        // 表示从index-metrics而来
+        fromIndexMetrics = true; 
+    }        
         
 });
 
 var _sxdebug = true;
+
+var fromIndexMetrics = false;
 
 var hideHeaderBar = true;
 var showAllItems = false;
@@ -2063,7 +2071,12 @@ function submitItemForm(item=stuff, isJump=false){
                 siiimpleToast.message('更新完成',{
                       position: 'bottom|center'
                     });
-                window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
+                if(fromIndexMetrics)
+                    window.location.href="index-metrics.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
+                    +(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"")
+                    +(stuff.meta&&stuff.meta.categoryName?"&classifyName="+stuff.meta.categoryName:"");
+                else
+                    window.location.href="index.html?from=web"+(showAllItems?"&showAllItems=true":"")+(hideHeaderBar?"&hideHeaderBar=true":"")
                     +(stuff.meta&&stuff.meta.category?"&classify="+stuff.meta.category:"")
                     +(stuff.meta&&stuff.meta.categoryName?"&classifyName="+stuff.meta.categoryName:"");
             }
