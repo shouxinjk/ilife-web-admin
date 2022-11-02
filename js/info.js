@@ -335,7 +335,14 @@ function showContent(item){
         stuff.status.index = "pending";//提交后需要重新索引
         stuff.timestamp.inactive = new Date();//更新时间戳
         index(stuff);
-    });    
+    });   
+    //重新评价按钮：点击后重新提交，需要设置remeasure=true
+    $("#remeasurebtn").click(function(){
+        var nStuff = JSON.parse(JSON.stringify(stuff));
+        nStuff["remeasure"] = true;
+        console.log("try remeasure item.",nStuff);
+        index(nStuff);
+    });      
     //itemKey：便于检查对照
     $("#itemkey").val(item._key); 
     //logo图片
