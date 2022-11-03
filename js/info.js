@@ -2401,33 +2401,27 @@ function patchCategoryTags(categoryId){
     }); 
 }
 
-//解析Stuff Item json得到文本内自带的key列表。在组装手动填写属性时，需要排除这些文本内已经存在的属性。如price.sale等
-//操作：将json逐层解析，将key装入列表
-//其中prefix属性前缀，包含小圆点，如 price. 
-var docKeys = [];
-function parseJsonKeys(json,prefix){
+//解析json得到key value对
+var docKeyValues = {};
+function parseJsonKeyValues(json,prefix){
     Object.keys(json).forEach(function(key){
-        docKeys.push(prefix+key);
-        //递归得到下一级:仅处理有值的情况
+        //处理数值，或者递归到下一级
         if(json[key]){
-            if($.isPlainObject(json[key])){
+            if( $.type(json[key])=== "object"){ //如果是对象则递归
                 console.log("got plain object.",json[key]);
-                parseJsonKeys(json[key],prefix+key+".");                
-            }
-            /**
-            else if( Array.isArray(json[key]) ){ //是Array 需要逐个解析进入
-                console.log("got array.",json[key]);
-                json[key].forEach(function(obj){
-                    parseJsonKeys(obj,prefix+key+".");
-                });
-            }else if( typeof json[key] === Object ){ //是json object
-                console.log("got object.",json[key]);
-                parseJsonKeys(json[key],prefix+key+".");
-            }
-            //**/
-            else{
+                parseJsonKeyValues(json[key],prefix+key+".");                
+            }else if( $.type(json[key])=== "string"){ //如果是字符串值
+                console.log("got string.",json[key]);
+                docKeyValues[prefix+key] = json[key];//直接写入           
+            }else if( $.type(json[key])=== "number"){ //如果是数值
+                console.log("got number.",json[key]);
+                docKeyValues[prefix+key] = json[key];//直接写入           
+            }else if( $.type(json[key])=== "array"){ //如果是数组：当前不支持。已经在系统界面上单独提供
+                console.log("got array.ignore.",json[key]);
+                //docKeyValues[prefix+key] = json[key];//直接写入           
+            }else{
                 //ignore
-                console.log("unknown object type.",json[key]);
+                console.log("unknown object type.ignore.",json[key]);
             }
         }
     });
@@ -2459,25 +2453,26 @@ function loadProps(categoryId){
                 }
             }
 
-            //排除item doc内已经包含的keys。由于要排除props，需要复制后处理
-            //当前未考虑json文本内键值补充。仅考虑关键属性定义的内容，以及props的内容，其他文本属性均直接忽略
-            /**
+            //加载json文档内的非props属性，用于自动填写。
+            //解析后得到扁平键值对： key:value 。其中key为 xxx.xxx形式，value为单一值
+            //由于需要修改，采用复制对象处理
             var nstuff = JSON.parse(JSON.stringify(stuff));
             delete nstuff.props;
             delete nstuff.status;
             delete nstuff.timestamp;
-            parseJsonKeys(nstuff,"");//解析得到doc内的所有key
-            console.log("got parse doc keys.",docKeys,items);
-            //**
-            docKeys.forEach(function(dockey){ //按照文档类型遍历，如果在props中存在则删除
-                var idx = (items|| []).findIndex((propItem) => propItem.property ===  dockey );
-                if(idx>-1){
-                    items.splice(idx,1);//直接删除
-                    console.log("remove duplicate",idx,dockey,items.length,items)
-                }
-                
-            });
-            console.log("got props without doc keys.",items);
+            delete nstuff.profit;
+            delete nstuff.advice;
+            delete nstuff.media;
+            delete nstuff.link;
+            delete nstuff.images;
+            delete nstuff.task;
+            delete nstuff.tags;
+            delete nstuff.tagging;
+            //delete nstuff.source;
+            //delete nstuff.seller;
+            //delete nstuff.distributor;
+            parseJsonKeyValues(nstuff,"");//解析得到doc内的数值，得到键值对
+            console.log("got doc key value pairs.",docKeyValues);
             //**/
 
             //逐条装载属性记录。采用自动补全方式便于快速标注。每个属性显示一行。
@@ -2486,7 +2481,7 @@ function loadProps(categoryId){
             //同时需要根据商品属性映射增加自动提示：包括手动标注、字典标注、引用标注，需要分别获取数值，对于自动标注则开放填写，不提供自动补全
             var propHtmlTpl = `
             <div style="display:flex;flex-direction:row;flex-wrap:nowrap;width:100%;margin:1px auto;">
-                <div style="width:20%;line-height:30px;text-align:right;">__propName</div>
+                <div style="width:20%;line-height:30px;text-align:right;">__propName__propType</div>
                 <div style="width:80%;vertical-align:middle;">
                     <input type="__type" value="__orgValue" id="__inputId" data-property="__property" data-targetproperty="__targetProperty" data-propname="__propName" data-ovalue="__orgValue" data-labeltype="__labelType" data-referdict="__referDict" data-refercategory="__referCategory" data-measureid="__measureId" style="width:100%;line-height:18px;margin:2px 5px;padding:2px;"/>
                 </div>
@@ -2497,10 +2492,17 @@ function loadProps(categoryId){
               //先根据标准类目的属性组装，包含继承属性。
               //检查props内是否匹配，如果匹配则更新props下的属性，否则更新原始文档上的属性
               for( k in items ){
-                if(docKeys.indexOf(k.property)>-1) //如果属性名和json自身的key值相同则忽略，表示已经在json文本内，不需要再次显示到props列表
+                /**
+                if(Object.keys(docKeyValues).indexOf(k.property)>-1) //如果属性名和json自身的key值相同则忽略，表示已经在json文本内，不需要再次显示到props列表
                     continue;
+                //**/
+
                 var item = items[k];
-                if(_sxdebug)console.log("measure:"+JSON.stringify(item));
+                if(_sxdebug)console.log("measure:"+JSON.stringify(item) );
+                if(item.isModifiable === "0") {//如果属性禁止手动修改则不显示
+                    console.log("ignore not modifiable item.",item);
+                    continue;
+                }
                 var name=item.name;
                 var property = item.property;
                 var value = props[property]?props[property]:"";
@@ -2526,6 +2528,25 @@ function loadProps(categoryId){
                 }
                 //**/
 
+                //检查默认值：对于数据值为空的情况优先设置默认值。禁用。当前defaultScore为单一数值，无法直接使用
+                //注意：分别检查props.xxx 以及 非props.xxx
+                if( /^props\./g.test(property) ){ //检查props.xxx
+                    if( (!value || value.trim().length==0) && item.defaultValue && item.defaultValue.trim().length>0 ){ //数值为空，且有默认值
+                        //先检查props.xxx 如果缺乏数值，则直接采用默认值填写
+                        console.log("try set default value",value,item.defaultValue);
+                        value = item.defaultValue; 
+                        savePropValue(property, item.defaultValue, name);//同步提交保存
+                    }
+                }else{//检查非props.xxxx
+                    if(Object.keys(docKeyValues).indexOf(property)>-1 && docKeyValues[property] && (""+docKeyValues[property]).trim().length > 0 ){ //优先从json的key-value pair中查询原来的数值
+                        value = docKeyValues[property];
+                        //已经是原来的值，不需要保存
+                    }else if(item.defaultValue && item.defaultValue.trim().length>0 ){//如果kv键值对中没有，则检查是否有默认值，如果有则设置为默认值
+                        value = item.defaultValue; 
+                        savePropValue(property, item.defaultValue, name);//同步提交保存
+                    }                    
+                }
+
                 //添加带自动补全功能HTML
                 var propHtml = propHtmlTpl;
                 var inputId = "propinput_"+targetPropKey.replace(/\./g,"_");
@@ -2534,6 +2555,7 @@ function loadProps(categoryId){
                 }else{
                     propHtml = propHtml.replace(/__type/g,"text");//否则自由输入
                 }
+                propHtml = propHtml.replace(/__propType/g,item.type=="self"?"๏":"○");
                 propHtml = propHtml.replace(/__propName/g,name);
                 propHtml = propHtml.replace(/__orgValue/g,value);
                 propHtml = propHtml.replace(/__property/g,property);
@@ -2710,6 +2732,7 @@ function loadProps(categoryId){
                     var propHtml = propHtmlTpl;
                     var inputId = "propinput_"+targetPropKey.replace(/\./g,"_");
                     propHtml = propHtml.replace(/__type/g,"text");//否则自由输入
+                    propHtml = propHtml.replace(/__propType/g,"&nbsp");//无显示前缀
                     propHtml = propHtml.replace(/__propName/g,name);
                     propHtml = propHtml.replace(/__orgValue/g,value);
                     propHtml = propHtml.replace(/__property/g,property);
