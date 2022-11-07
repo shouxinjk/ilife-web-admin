@@ -1491,7 +1491,7 @@ function requestAdvice(scheme,xBroker,xItem,xUser){
     if(!stuff.advice)
         stuff.advice={};
     stuff.advice[scheme.id] = xAdvice;
-    submitItemForm();//提交修改
+    submitItemForm();//提交修改: 
 }
 
 //生成图文内容：请求模板列表

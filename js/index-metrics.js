@@ -811,7 +811,7 @@ function loadMeasureScores(stuff,featuredDimension){
     //feature = 1；dimensionType：0客观评价，1主观评价
     //注意：由于clickhouse非严格唯一，需要取最后更新值
     $.ajax({
-        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=0 and itemKey='"+stuff._key+"' order by ts format JSON",
+        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=0 and itemKey='"+stuff._key+"' order by ver desc,ts desc format JSON",
         type:"get",
         //async:false,//同步调用
         //data:{},
@@ -870,7 +870,7 @@ function loadEvaluationScores(stuff,featuredDimension){
     //feature = 1；dimensionType：0客观评价，1主观评价
     //注意：由于clickhouse非严格唯一，需要取最后更新值
     $.ajax({
-        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=1 and itemKey='"+stuff._key+"' order by ts format JSON",
+        url:app.config.analyze_api+"?query=select dimensionId,score from ilife.info where feature=1 and dimensionType=1 and itemKey='"+stuff._key+"' order by ver desc,ts desc format JSON",
         type:"get",
         //async:false,//同步调用
         //data:{},
