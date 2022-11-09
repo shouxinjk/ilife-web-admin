@@ -1975,17 +1975,11 @@ function sendItemMaterialToWeibo(){
                 /**
                 if(statusPic)
                     formData.append("pic", dataURLtoFile(statusPic, stuff.itemKey+".jpeg"));//注意，使用files作为字段名
-                
-                var picArray = [];
-                for(var i=0; i<9 && i<base64Images.length; i++){
-                    picArray.push(dataURLtoFile(base64Images[i], i+"0"+stuff.itemKey+".jpeg"));
-                }
-                formData.append("pic", JSON.stringify(picArray));
                 //**/
-
+                
                 //**
                 for(var i=0; i<9 && i<base64Images.length; i++){
-                    formData.append("pic[]", dataURLtoFile(base64Images[i], i+"0"+stuff.itemKey+".jpeg"), i+"0"+stuff.itemKey+".jpeg");//注意，使用files作为字段名
+                    formData.append("pic", dataURLtoFile(base64Images[i], i+"0"+stuff.itemKey+".jpeg"), i+"0"+stuff.itemKey+".jpeg");//注意，使用files作为字段名
                 }
                 //**/
                 $.ajax({
