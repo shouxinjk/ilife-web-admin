@@ -83,6 +83,10 @@ $(document).ready(function ()
             stuff.logo?stuff.logo:stuff.images[0].replace(/\.avif/,'')
             );//发送到企业微信群
     });
+    //注册发送微博事件：发送商品信息到微博，包含地址、推荐语、图片。其中图片优先选择评价图片
+    $("#sendWeiboItem").click(function(e){
+        sendItemMaterialToWeibo();//发送到微博
+    });    
     //注册图片发送到运营群事件：蒙德里安图片
     $("#sendWebhookMondrian").click(function(e){
         var id = $(this).attr("id").replace(/sendWebhook/g,"").toLowerCase();
@@ -251,7 +255,19 @@ function showContent(item){
     //正文及图片
     for(var i=0;i<item.images.length;i++){
         $("#gallery").append("<li><img src='" + item.images[i].replace(/\.avif/,'') + "' alt=''/></li>");//加载图片幻灯
-        $("#content").append("<img src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
+
+        if(i==0){ //首图加载完成后转换为base64编码缓存
+            $("#content").append("<img id='itemimg0' src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
+            $("#itemimg0").load(function(){
+                console.log("image 0 loaded. ",$(this)[0]);
+                var base64img = base64Img($(this)[0]);
+                console.log("image 0 converted. ",base64img);
+                if(base64img && base64img.trim().length>0 )
+                    base64Images.push(base64img);
+            });
+        }else{
+            $("#content").append("<img src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
+        }
     }
 
     //初始化图片幻灯
@@ -345,6 +361,14 @@ function showContent(item){
     });      
     //itemKey：便于检查对照
     $("#itemkey").val(item._key); 
+    $("#itemkey").attr("data-clipboard-text",item._key); 
+    var clipboard = new ClipboardJS('#itemkey'); //提供点击复制功能
+    clipboard.on('success', function(e) {
+        console.info('itemKey copied:', e.text);
+        siiimpleToast.message('itemKey已复制~~',{
+              position: 'bottom|center'
+            }); 
+    });     
     //logo图片
     $("#logo").val(item.logo?item.logo:item.images[0]);     
     //手工标注
@@ -996,6 +1020,7 @@ function showRadar(){
         //console.log("image uri.",dataURLtoFile(uri,"dimension.png"));
         //$("#radarImg").append('<img width="'+Number(width)+'" height="'+Number(height)+'" src="' + uri + '" alt="请长按保存"/>');
         //TODO： 将图片提交到服务器端。保存文件名为：itemKey-d.png
+        base64Images.push(uri);//缓存用于推送
         uploadPngFile(uri, "measure-radra.png", "measure");//文件上传后将在stuff.media下增加{measure:imagepath}键值对
     });        
 }
@@ -1134,6 +1159,7 @@ function showMondrian(data){
     svgAsPngUri(canvas, options, function(uri) {
         //console.log("image uri.",dataURLtoFile(uri,"dimension.png"));
         //将图片提交到服务器端。保存文件文件key为：measure-scheme
+        base64Images.push(uri);//缓存用于推送
         uploadPngFile(uri, "mondrian.png", "mondrian");//文件上传后将在stuff.media下增加{measure-scheme:imagepath}键值对
     });  
 }
@@ -1212,6 +1238,7 @@ function showRadar2(){
         //console.log("image uri.",dataURLtoFile(uri,"dimension.png"));
         //$("#radarImg").append('<img width="'+Number(width)+'" height="'+Number(height)+'" src="' + uri + '" alt="请长按保存"/>');
         //TODO： 将图片提交到服务器端。保存文件名为：itemKey-d.png
+        base64Images.push(uri);//缓存用于推送
         uploadPngFile(uri, "measure-radra2.png", "measure2");//文件上传后将在stuff.media下增加{measure:imagepath}键值对
     });        
 }
@@ -1901,6 +1928,87 @@ function sendItemMaterialToWebhook(title,url,imgUrl){
     });     
 }
 
+//发送信息到微博：
+//包含一条推荐语，URL，以及图片。其中图片优先为评价结果，否则为商品摘要图片
+var base64Images = [];//缓存生成的图表：当图表重新生成时均自动存入
+function sendItemMaterialToWeibo(){
+    //挑选一条推荐语：
+    var statusText = stuff.title;
+    var pendingTxts = [];
+    if(stuff.advice && stuff.advice.length>0 ){ 
+        Object.keys(stuff.advice).forEach(function(key){
+            pendingTxts.push(stuff.advice[key]);
+        });
+    }
+    if(stuff.tagging && stuff.tagging.length>0 ){
+        pendingTxts.push(stuff.tagging);
+    }
+    if(pendingTxts.length>0){
+        var idx = new Date().getTime() % pendingTxts.length;
+        statusText = pendingTxts[idx];
+    }
+
+    //挑选一个评价图片：根据已经转换得到的base64images随机得到一张
+    var statusPic = null;
+    if(base64Images.length>0){
+        console.log("got base64 images. ",base64Images.length);
+        var idx = new Date().getTime() % base64Images.length;
+        statusPic = base64Images[idx];
+    }else{//没有图片只能推送文字和链接
+        console.log("no base64 images found. send text only");
+    }
+    //获取access token
+    console.log("\n===try to sent weibo status. ===\n",statusText,statusPic);
+    $.ajax({
+        url:app.config.sx_api+"/rest/api/access-token/weibo",
+        type:"get",     
+        success:function(res){
+            console.log("\n=== got weibo access token. ===\n",res);
+            if(res.success){
+                //组装multipart-form并发送
+                console.log("try to upload status.",statusText,statusPic);
+                var formData = new FormData();
+                formData.append("access_token",res.token);
+                formData.append("status",statusText);
+                formData.append("rip","110.184.67.81");//real ip address
+                if(statusPic)
+                    formData.append("pic", dataURLtoFile(statusPic, stuff.itemKey+".jpeg"));//注意，使用files作为字段名
+                $.ajax({
+                     type:'POST',
+                     url:"https://api.weibo.com/2/statuses/share.json",
+                     data:formData,
+                     contentType:false,
+                     processData:false,//必须设置为false，不然不行
+                     dataType:"json",
+                     mimeType:"multipart/form-data",
+                     success:function(ret){//把返回的数据更新到item
+                        console.log("\n=== webhook message sent. ===\n",ret);
+                        siiimpleToast.message('欧耶，已经发送到微博',{
+                              position: 'bottom|center'
+                            }); 
+                     }
+                 }); 
+                              
+            }else{
+                siiimpleToast.message('获取access token失败',{
+                      position: 'bottom|center'
+                    });                 
+            }
+
+        }
+    }); 
+}
+
+//将图片转换为base64编码
+function base64Img(img) {
+   const canvas = document.createElement('canvas');
+   const ctx = canvas.getContext('2d');   
+   canvas.width = img.width;
+   canvas.height = img.height;   
+   ctx.drawImage(img, 0, 0);
+   return canvas.toDataURL('image/jpeg');
+}
+
 //发送文字信息到企业微信：用于发送推荐语等
 //由运营人员选择后选择发送
 function sendItemAdviceToWebhook(text){
@@ -1987,6 +2095,7 @@ function showSunBurst(data){
     svgAsPngUri(canvas, options, function(uri) {
         //console.log("image uri.",dataURLtoFile(uri,"dimension.png"));
         //将图片提交到服务器端。保存文件文件key为：measure-scheme
+        base64Images.push(uri);//缓存用于推送
         uploadPngFile(uri, "measure-sunburst.png", "measure-scheme");//文件上传后将在stuff.media下增加{measure-scheme:imagepath}键值对
     });  
 }
