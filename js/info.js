@@ -1933,17 +1933,20 @@ function sendItemMaterialToWeibo(){
     //挑选一条推荐语：
     var statusText = stuff.title;
     var pendingTxts = [];
-    if(stuff.advice && stuff.advice.length>0 ){ 
-        Object.keys(stuff.advice).forEach(function(key){
-            pendingTxts.push(stuff.advice[key]);
-        });
-    }
-    if(stuff.tagging && stuff.tagging.length>0 ){
-        pendingTxts.push(stuff.tagging);
-    }
-    if(pendingTxts.length>0){
-        var idx = new Date().getTime() % pendingTxts.length;
-        statusText = pendingTxts[idx];
+    if($("#tagging").val() && $("#tagging").val().trim().length > 0){
+        statusText = $("#tagging").val()
+    }else if(stuff.tagging && stuff.tagging.length>0 ){
+        statusText = stuff.tagging;
+    }else{
+        if(stuff.advice && stuff.advice.length>0 ){ 
+            Object.keys(stuff.advice).forEach(function(key){
+                pendingTxts.push(stuff.advice[key]);
+            });
+        }
+        if(pendingTxts.length>0){
+            var idx = new Date().getTime() % pendingTxts.length;
+            statusText = pendingTxts[idx];
+        }
     }
 
     //挑选一个评价图片：根据已经转换得到的base64images随机得到一张
@@ -1967,7 +1970,7 @@ function sendItemMaterialToWeibo(){
                 console.log("try to upload status.",statusText,statusPic);
                 var formData = new FormData();
                 formData.append("access_token",res.token);
-                formData.append("status",statusText+" https://www.biglistoflittlethings.com/ilife-web-wx/go.html?id="+stuff._key);
+                formData.append("status",encodeURIComponent(statusText+" https://www.biglistoflittlethings.com/ilife-web-wx/go.html?id="+stuff._key));
                 formData.append("rip","110.184.67.81");//real ip address
                 if(statusPic)
                     formData.append("pic", dataURLtoFile(statusPic, stuff.itemKey+".jpeg"));//注意，使用files作为字段名
@@ -1980,11 +1983,14 @@ function sendItemMaterialToWeibo(){
                      dataType:"json",
                      mimeType:"multipart/form-data",
                      success:function(ret){//把返回的数据更新到item
-                        console.log("\n=== webhook message sent. ===\n",ret);
+                        console.log("\n=== weibo msg sent. ===\n",ret);
                         siiimpleToast.message('欧耶，已经发送到微博',{
                               position: 'bottom|center'
                             }); 
-                     }
+                     },
+                    error: function (xhr, textStatus, err) {//调用出错执行的函数
+                        console.log("request sent but got error.",xhr,textStatus,err);
+                      }
                  }); 
                               
             }else{
