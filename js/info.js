@@ -1972,8 +1972,22 @@ function sendItemMaterialToWeibo(){
                 formData.append("access_token",res.token);
                 formData.append("status",encodeURIComponent(statusText+" https://www.biglistoflittlethings.com/ilife-web-wx/go.html?id="+stuff._key));
                 formData.append("rip","110.184.67.81");//real ip address
+                /**
                 if(statusPic)
                     formData.append("pic", dataURLtoFile(statusPic, stuff.itemKey+".jpeg"));//注意，使用files作为字段名
+                
+                var picArray = [];
+                for(var i=0; i<9 && i<base64Images.length; i++){
+                    picArray.push(dataURLtoFile(base64Images[i], i+"0"+stuff.itemKey+".jpeg"));
+                }
+                formData.append("pic", JSON.stringify(picArray));
+                //**/
+
+                //**
+                for(var i=0; i<9 && i<base64Images.length; i++){
+                    formData.append("pic", dataURLtoFile(base64Images[i], i+"0"+stuff.itemKey+".jpeg"), i+"0"+stuff.itemKey+".jpeg");//注意，使用files作为字段名
+                }
+                //**/
                 $.ajax({
                      type:'POST',
                      url:"https://api.weibo.com/2/statuses/share.json",
