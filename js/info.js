@@ -130,6 +130,7 @@ $(document).ready(function ()
 });
 
 var _sxdebug = true;
+var imgPrefix = "https://www.biglistoflittlethings.com/3rdparty?url=";
 
 var indexPage = "index.html";
 
@@ -255,20 +256,14 @@ function showContent(item){
     //正文及图片
     for(var i=0;i<item.images.length;i++){
         $("#gallery").append("<li><img src='" + item.images[i].replace(/\.avif/,'') + "' alt=''/></li>");//加载图片幻灯
-
-        if(i==0){ //首图加载完成后转换为base64编码缓存
-            $("#content").append("<img id='itemimg0' src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
-            $("#itemimg0").load(function(){
-                console.log("image 0 loaded. ",$(this)[0]);
-                var base64img = base64Img($(this)[0]);
-                console.log("image 0 converted. ",base64img);
-                if(base64img && base64img.trim().length>0 )
-                    base64Images.push(base64img);
-            });
-        }else{
-            $("#content").append("<img src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
-        }
+        $("#content").append("<img src='" + item.images[i].replace(/\.avif/,'') + "'/>");//正文图片
+        base64Img(item.images[i]);//将图片转换为base64为上传做准备
     }
+
+    if(item.logo && item.images.indexOf(item.logo)<0){ //如果logo是独立图片，也加入
+        base64Img(item.logo);//将图片转换为base64为上传做准备
+    }
+
 
     //初始化图片幻灯
     $('#gallery').galleryView({
@@ -495,8 +490,8 @@ function showContent(item){
                 showDimensionMondrian();
             }else if("sunburst"==chartType){
                 $("#sunburstImg").css("display","none");//隐藏原有图片
-                //showDimensionBurst();//显示评价规则
-                showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
+                showDimensionBurst();//显示评价规则
+                //showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
             }else if("radar2"==chartType){
                 $("#radarImg2").css("display","none");//隐藏原有图片
                 showRadar2();//显示主观评价图
@@ -790,7 +785,7 @@ function pupulateMeasureScore(){
         }
 
         //显示雷达图
-        if(!stuff.media || !stuff.media["measure"])//仅在第一次进入时才尝试自动生成
+        // if(!stuff.media || !stuff.media["measure"])//仅在第一次进入时才尝试自动生成
             showRadar();//显示评价图
 
         //显示measureScore表格提供标注功能
@@ -933,7 +928,7 @@ function pupulateMeasureScore2(){
             measureScores2.push(measureScore);
         }
 
-        if(!stuff.media || !stuff.media["measure2"])//仅在第一次进入时才尝试自动生成
+        // if(!stuff.media || !stuff.media["measure2"])//仅在第一次进入时才尝试自动生成
             showRadar2();//显示评价图
 
         //显示measureScore表格提供标注功能
@@ -1010,7 +1005,8 @@ function showRadar(){
     var options = {
         encoderOptions:1,
         //encoderType:"image/jpeg",
-        scale:2,
+        //scale:2,
+        scale:1,
         left:0,
         top:0,
         width:Number(width),
@@ -1148,7 +1144,8 @@ function showMondrian(data){
     var height = $(canvas).attr("height");
     var options = {
             encoderOptions:1,
-            scale:2,
+            //scale:2,
+            scale:1,
             //left:-1*Number(width)/2,
             //top:-1*Number(height)/2,
             left:0,
@@ -1228,7 +1225,8 @@ function showRadar2(){
     var options = {
         encoderOptions:1,
         //encoderType:"image/jpeg",
-        scale:2,
+        //scale:2,
+        scale:1,
         left:0,
         top:0,
         width:Number(width),
@@ -1969,7 +1967,7 @@ function sendItemMaterialToWeibo(){
                 console.log("try to upload status.",statusText,statusPic);
                 var formData = new FormData();
                 formData.append("access_token",res.token);
-                formData.append("status",statusText);
+                formData.append("status",statusText+" https://www.biglistoflittlethings.com/ilife-web-wx/go.html?id="+stuff._key);
                 formData.append("rip","110.184.67.81");//real ip address
                 if(statusPic)
                     formData.append("pic", dataURLtoFile(statusPic, stuff.itemKey+".jpeg"));//注意，使用files作为字段名
@@ -1999,14 +1997,29 @@ function sendItemMaterialToWeibo(){
     }); 
 }
 
-//将图片转换为base64编码
-function base64Img(img) {
-   const canvas = document.createElement('canvas');
-   const ctx = canvas.getContext('2d');   
-   canvas.width = img.width;
-   canvas.height = img.height;   
-   ctx.drawImage(img, 0, 0);
-   return canvas.toDataURL('image/jpeg');
+//将url图片转换为base64编码
+function base64Img(url) {
+   var canvas = document.createElement('canvas');
+   var ctx = canvas.getContext('2d');   
+   var img = new Image();
+
+    img.crossOrigin = 'Anonymous';
+    img.onload = function(){
+        if(img.height<200 || img.width<200){
+            console.log("image is too small. ignore.");
+        }else{
+            canvas.height = img.height;
+            canvas.width = img.width;
+            ctx.drawImage(img,0,0);
+            var dataURL = canvas.toDataURL('image/jpeg');
+            if(dataURL && dataURL.trim().length>0){
+                console.log("covert image done.", dataURL);
+                base64Images.push(dataURL);
+            }
+        }
+        canvas = null; 
+    };
+    img.src = url;
 }
 
 //发送文字信息到企业微信：用于发送推荐语等
@@ -2043,17 +2056,11 @@ function showDimensionBurst(){
     //根据category获取客观评价数据
     var data={
         categoryId:stuff.meta.category
-        //categoryId:testData[testDataIndex].categoryId
-        //categoryId:"ff240a6e909e45c2ae0c8f77241cda25" //目的地
-        //categoryId:"7363d428d1f1449a904f5d34aaa8f1f7" //亲子
-        //categoryId:"91349a6a41ce415caf5b81084927857a" //酒店 categoryId
-        //,parentId:"d1668f8b3c9748cd806462a45651827b"
     };
     console.log("try to load dimension data.",data);
     util.AJAX(app.config.sx_api+"/mod/itemDimension/rest/dim-tree-by-category", function (res) {
         console.log("======\nload dimension.",data,res);
         if (res.length>0) {//显示图形
-            //showSunBurst({name:testData[testDataIndex].categoryName,children:res});
             measureScheme = res;
             showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:res});
         }else{//没有则啥也不干
@@ -2086,7 +2093,8 @@ function showSunBurst(data){
     var height = $(canvas).attr("height");
     var options = {
             encoderOptions:1,
-            scale:2,
+            //scale:2,
+            scale:1,
             left:-1*Number(width)/2,
             top:-1*Number(height)/2,
             width:Number(width),
@@ -2379,9 +2387,9 @@ function loadItem(key){//获取内容列表
             //显示评价树
             if(stuff.meta && stuff.meta.category){
                 requestPosterScheme();//请求海报模板列表
-                if(!stuff.media || !stuff.media["measure-scheme"])//仅在第一次进入时才尝试自动生成
-                    showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
-                    //showDimensionBurst();//显示评价规则
+                // if(!stuff.media || !stuff.media["measure-scheme"])//仅在第一次进入时才尝试自动生成
+                    //showSunBurst({name:stuff.meta.categoryName?stuff.meta.categoryName:"评价规则",children:measureScheme});
+                    showDimensionBurst();//显示评价规则
             }
 
             if(data.categoryId){//如果当前数据已经设置了ItemCategory
@@ -2969,7 +2977,7 @@ function showMeasureScores(){
 		var html = "";
 		html += "<div style='display:flex;flex-direction:row;flex-wrap:nowrap;margin:10px 0;'>";
 		html += "<div style='width:120px;line-height:24px;'>"+measureScores[i].name+"</div>";
-		html += "<div style='width:60px;text-align:center;line-height:24px;' id='mscore"+measureScores[i].id+"'>"+measureScores[i].score+"</div>";
+		html += "<div style='width:60px;text-align:center;line-height:24px;' id='mscore"+measureScores[i].id+"'>"+measureScores[i].score.toFixed(2)+"</div>";
 		html += "<div style='width:70%' id='score"+measureScores[i].id+"'></div>";
 		html += "</div>";
 		$("#measuresList").append(html);//装载到界面
@@ -3022,7 +3030,7 @@ function showMeasureScores2(){
         html += "<div style='display:flex;flex-direction:row;flex-wrap:nowrap;margin:10px 0;'>";
         //html += "<div style='width:120px;line-height:24px;'>"+measureScores2[i].type+"</div>";
         html += "<div style='width:120px;line-height:24px;'>"+dimNames2[measureScores2[i].type]+"</div>"; //显示友好名称
-        html += "<div style='width:60px;text-align:center;line-height:24px;' id='mscore2"+measureScores2[i].id+"'>"+measureScores2[i].score+"</div>";
+        html += "<div style='width:60px;text-align:center;line-height:24px;' id='mscore2"+measureScores2[i].id+"'>"+measureScores2[i].score.toFixed(2)+"</div>";
         html += "<div style='width:70%' id='score2_"+measureScores2[i].id+"'></div>";
         html += "</div>";
         $("#measuresList2").append(html);//装载到界面

@@ -15,7 +15,7 @@
     <link rel="stylesheet" type="text/css" href="ext/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="ext/star-rating-svg/star-rating-svg.css">  
     <link rel="stylesheet" type="text/css" href="css/reset2.0.min.css">
-    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css?v=0.1">
     <link rel="stylesheet" type="text/css" href="css/info.css?v=0.2">
 <!--script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <script>
@@ -165,51 +165,64 @@
                           <option value="mondrian">蒙德里安艺术图</option>
                           <option value="radar2">主观评价雷达图</option>
                         </select>
-                        <button id="btnMeasure" class="taggingBtn" class="btn" style="margin:0 10px;">生成图表</button>
+                        <button id="btnMeasure" class="taggingBtn" class="btn" style="margin:0 10px;">重新生成图表</button>
                       </div>    
 
                       <!-- 客观评价 -->                  
-                      <!--button id="btnMeasure" class="taggingBtn">生成评价图表</button-->
-                      <!-- 蒙德里安格子图 -->     
-                      <div id="mondrianTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;">蒙德里安艺术图：&nbsp;&nbsp;<a id='sendWebhookMondrian' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div>             
-                      <div id="mondrian">
-                      </div> 
-                      <div id="mondrianImg">
-                          <button id="saveMondrian" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
-                      </div>         
-                      <!-- 雷达图：圆形 -->                     
-                      <div id="radarTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;">客观评价雷达图：&nbsp;&nbsp;<a id='sendWebhookRadar' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div>             
-                      <div id="radar">
-                      </div> 
-                      <div id="radarImg">
-                          <button id="saveRadar" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
-                      </div>         
-                      <!-- Sunburst：显示当前类目评价规则 -->
-                      <div id="sunburstTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;">客观评价规则树：&nbsp;&nbsp;<a id='sendWebhookSunburst' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div> 
-                      <div id="sunburst" style="width:80%;padding-left:10%;">
-                      </div> 
-                      <div id="sunburstImg">
-                          <button id="saveSunburst" class="taggingBtn" style="display:none">生成物体系海报</button>
-                      </div>  
+                      <!--button id="btnMeasure" class="taggingBtn">生成评价图表</button-->       
+
                       <!--客观评价结果：支持标注时手动录入-->
+                      <hr class="hr-solid-content" data-content="客观评价得分"  style="margin:20px 0;"/>   
                       <div id="measuresDiv" style="display:none">
-                          <label class="formLabel" style="line-height: 30px;margin:5px 0; padding:5px 0;">客观评价结果</label>
+                          <!--label class="formLabel" style="line-height: 30px;margin:5px 0; padding:5px 0;">客观评价结果</label-->
                           <div id="measuresList"></div>
                       </div> 
 
-                      <!-- 主观评价 -->                      
+                      <!-- 雷达图：圆形 -->      
+                      <hr class="hr-solid-content" data-content="客观评价雷达图"  style="margin:20px 0;"/>                  
+                      <div id="radarTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;"><a id='sendWebhookRadar' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div>             
+                      <div id="radar">
+                      </div> 
+                      <!--div id="radarImg">
+                          <button id="saveRadar" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
+                      </div-->         
+
+                      <!-- Sunburst：显示当前类目评价规则 -->
+                      <hr class="hr-solid-content" data-content="客观评价规则"  style="margin:20px 0;"/>  
+                      <div id="sunburstTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;"><a id='sendWebhookSunburst' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div> 
+                      <div id="sunburst" style="width:80%;padding-left:10%;">
+                      </div> 
+                      <!--div id="sunburstImg">
+                          <button id="saveSunburst" class="taggingBtn" style="display:none">生成物体系海报</button>
+                      </div-->  
+
+                      <!-- 主观评价 -->   
+
+                      <!--主观评价结果：支持标注时手动录入-->
+                      <hr class="hr-solid-content" data-content="主观评价得分"  style="margin:20px 0;"/>  
+                      <div id="measuresDiv2" style="display:none">
+                          <div id="measuresList2"></div>
+                      </div>  
+
                       <!-- Radar2：主观评价雷达图 -->
-                      <div id="radarTitle2" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;">主观评价雷达图：&nbsp;&nbsp;<a id='sendWebhookRadar2' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div>             
+                      <hr class="hr-solid-content" data-content="客观评价雷达图"  style="margin:20px 0;"/>  
+                      <div id="radarTitle2" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;"><a id='sendWebhookRadar2' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div>             
                       <div id="radar2">
                       </div> 
-                      <div id="radarImg2">
+                      <!--div id="radarImg2">
                           <button id="saveRadar2" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
-                      </div>                       
-                      <!--客观评价结果：支持标注时手动录入-->
-                      <div id="measuresDiv2" style="display:none">
-                          <label class="formLabel" style="line-height: 30px;margin:5px 0; padding:5px 0;">主观评价结果</label>
-                          <div id="measuresList2"></div>
-                      </div>                         
+                      </div-->                       
+
+
+                      <!-- 蒙德里安格子图 -->     
+                      <hr class="hr-solid-content" data-content="评价规则蒙德里安格子图"  style="margin:20px 0;"/>  
+                      <div id="mondrianTitle" class="prop-key" style="width:90%;display:none;margin:10px 0;font-size:12px;"><a id='sendWebhookMondrian' href='#' style='font-size:12px;color:blue;'>发到运营群</a></div>             
+                      <div id="mondrian">
+                      </div> 
+                      <!--div id="mondrianImg">
+                          <button id="saveMondrian" class="taggingBtn" style="display:none;">生成带有上图的物体系海报</button>
+                      </div-->  
+
                   </div>
                   <div id="posterInfo">
                       <!-- Posters: 海报列表，便于下载分享 -->
@@ -295,6 +308,6 @@
 <script type="text/javascript" src="ext/clipboard/clipboard.min.js"></script>
 <script type="text/javascript" src="js/common.js?v=1.01"></script>
 <script type="text/javascript" src="js/util.js?v=1.07"></script>
-<script type="text/javascript" src="js/info.js?v=3.38"></script>
+<script type="text/javascript" src="js/info.js?v=3.49"></script>
 <!--script type="text/javascript" src="http://api.map.baidu.com/getscript?v=2.0&ak=XwNTgTOf5mYaZYhQ0OiIb6GmOHsSZWul&services=&t=20190622163250"></script-->
 </html>
