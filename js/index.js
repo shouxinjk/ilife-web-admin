@@ -260,8 +260,8 @@ function showClassifyDiv(){
         items.forEach(function(item){
             if(!item.meta)
                 item.meta = {};
-            item.meta.category = itemMetaCategory;//注意，不能使用classify，界面在切换过程中会修改
-            item.meta.categoryName = classifyName;
+            item.meta.category = targetItemCategory.category;//注意，不能使用classify，界面在切换过程中会修改
+            item.meta.categoryName = targetItemCategory.categoryName;
             submitItemForm(item);
             changePlatformCategoryMapping(item);
         });
