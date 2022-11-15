@@ -210,6 +210,16 @@ function showClassifyDiv(){
         if(classify == msg[i].id)//高亮显示当前选中的classify
             $(navObj.find("li")[i]).addClass("showNav");
     }
+
+    //增加重新提交索引按钮：将重新加载该类目下的item，并且remeasure
+    if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
+        navObj.append("<span id='batchRemeasure' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>重新索引并评价</span>");
+        //注册点击事件
+        $("#batchRemeasure").click(function(){//更新当前页面所有item列表的meta设置
+            loadStuffItemsByMetaCategory();//将自动翻页完成条目提交 
+        });
+    }
+
     /**
     //增加将当前界面所有商品统一加入classify分类按钮
     if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
@@ -311,6 +321,49 @@ function showItemCategoryCascader(categoryId){
         }
     });
 }
+
+
+//递归查询得到某一个meta category下的条目
+var pendingItems = [];
+var pendingPages = {
+    offset:0, //当前页码
+    size:50 //每页条数
+};
+function loadStuffItemsByMetaCategory(){
+    $.ajax({
+        url:app.config.data_api + "/_api/cursor",
+        type:"post",
+        data:JSON.stringify({
+            query: 'For doc in my_stuff filter doc.meta.category=="'+itemMetaCategory+'" limit '+(pendingPages.offset*pendingPages.size)+','+pendingPages.size+' return doc',
+            count: false
+        }),//注意：不能使用JSON对象
+        headers:{
+            "Content-Type":"application/json",
+            "Accept":"application/json",
+            Authorization:"Basic aWxpZmU6aWxpZmU="
+        },
+        success:function(ret){
+            console.log("got pending items.",ret);
+            //判断数量是否继续取的后续分页
+            if(ret.result && ret.result.length >0){ //有结果则逐条提交重新索引
+                ret.result.forEach(function(pendingItem){ //逐条提交索引
+                    pendingItem["remeasure"]=true;
+                    submitItemForm(pendingItem);
+                });
+                //处理翻页
+                if(ret.result.length == pendingPages.size){
+                    pendingPages.offset = pendingPages.offset+1; //翻页
+                    loadStuffItemsByMetaCategory();
+                }else{
+                    console.log("no more pages.");
+                }
+            }else{
+                console.log("no more results.");
+            }           
+        }
+    })     
+}
+
 
 //逐条更改item的meta信息：在批量修改是调用
 var totalSubmitItems = 0;
