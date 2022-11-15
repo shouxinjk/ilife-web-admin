@@ -285,10 +285,10 @@ function loadItemCategories(){
         type:"get",
         success:function(res){
             //装载categories
-            console.log("got all categories",res);
+            console.log("got all categories",res,itemMetaCategory);
             sxItemCategories = res;  
             //显示级联选择
-            showItemCategoryCascader(itemMetaCategory?itemMetaCategory:null);
+            showItemCategoryCascader(null);
         }
     })    
 }
