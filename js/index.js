@@ -96,6 +96,8 @@ var cursorId = null;
 var showAllItems = false;
 var hideHeaderBar = true;
 
+var cascader = null;//级联选择器实例
+
 setInterval(function ()
 {
     if ($(window).scrollTop() >= $(document).height() - $(window).height() - dist && !loading)
@@ -208,16 +210,19 @@ function showClassifyDiv(){
     
     //增加重新提交索引按钮：将重新加载该类目下的item，并且remeasure
     if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
-        navObj.append("<span id='batchRemeasure' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:orange;font-weight:bold;margin-left:10%;'>重新索引并评价</span>");
+        navObj.append("<span id='batchRemeasure' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>重新索引并评价</span>");
         //注册点击事件
         $("#batchRemeasure").click(function(){//更新当前页面所有item列表的meta设置
             loadStuffItemsByMetaCategory();//将自动翻页完成条目提交 
         });
     }
 
+
+
     //增加将当前界面所有商品统一加入classify分类按钮
+    /**
     if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
-        navObj.append("<span id='batchClassify' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:orange;font-weight:bold;margin-left:10%;'>将所有条目都加入"+classifyName+"</span>");
+        navObj.append("<span id='batchClassify' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>加入选中类目</span>");
         //注册点击事件
         $("#batchClassify").click(function(){//更新当前页面所有item列表的meta设置
             items.forEach(function(item){
@@ -230,6 +235,37 @@ function showClassifyDiv(){
             });
         });
     }
+    //**/
+
+    //显示批量调整类目操作
+    loadItemCategories();//加载类目下拉
+    navObj.append("<span id='btnShowItemCategoryCascade' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10px;'>批量修改类目</span>");
+    //注册点击事件
+    $("#btnShowItemCategoryCascade").click(function(){//切换显示或隐藏类目下拉
+        if($("#itemCategoryCascadeDiv").css("display")=="none"){
+            $("#itemCategoryCascadeDiv").css("display","flex")
+        }else{
+            $("#itemCategoryCascadeDiv").css("display","none")
+        }
+    });     
+    $("#batchClassify").click(function(){//更新当前页面所有item列表的meta设置
+        if(!targetItemCategory || !targetItemCategory.category || !targetItemCategory.categoryName){
+            console.log("no category selected.");
+            siiimpleToast.message('选择一个类目先~~',{
+              position: 'bottom|center'
+            });     
+            return;        
+        }
+
+        items.forEach(function(item){
+            if(!item.meta)
+                item.meta = {};
+            item.meta.category = itemMetaCategory;//注意，不能使用classify，界面在切换过程中会修改
+            item.meta.categoryName = classifyName;
+            submitItemForm(item);
+            changePlatformCategoryMapping(item);
+        });
+    });    
 
     //注册点击事件
     navObj.find("li").click(function(){
@@ -246,6 +282,41 @@ function showClassifyDiv(){
             $(this).addClass("showNav");//不好，这个是直接通过“全部”来完成的                    
         }
     })    
+}
+
+//加载类目数据，加载完成后显示级联选择器
+var sxItemCategories = [];
+function loadItemCategories(){
+    $.ajax({
+        url:app.config.sx_api+"/mod/itemCategory/all-categories?parentId=1",
+        type:"get",
+        success:function(res){
+            //装载categories
+            console.log("got all categories",res);
+            sxItemCategories = res;  
+            //显示级联选择
+            showItemCategoryCascader(itemMetaCategory?itemMetaCategory:null);
+        }
+    })    
+}
+
+//显示级联选择器
+var targetItemCategory = {};//记录选择的目标类目
+function showItemCategoryCascader(categoryId){
+    cascader = new eo_cascader(sxItemCategories, {
+        elementID: 'category-wrap',
+        multiple: false, // 是否多选
+        // 非编辑页，checkedValue 传入 null
+        // 编辑时 checkedValue 传入最后一级的 ID 即可
+        checkedValue: categoryId?[categoryId] : null,
+        separator: '/', // 分割符 山西-太原-小店区 || 山西/太原/小店区
+        clearable: false, // 是否可一键删除已选
+        onSelect:function(selectedCategory){//回调函数，参数带有选中标签的ID和label。回传为：{id:[],label:[]}//其中id为最末级选中节点，label为所有层级标签
+            console.log("crawler::category item selected.",selectedCategory);
+            //不做调整，仅显示即可
+            targetItemCategory = {category:selectedCategory.id[0],categoryName:selectedCategory.label[selectedCategory.label.length-1]};//仅保存叶子节点
+        }
+    });
 }
 
 //递归查询得到某一个meta category下的条目
