@@ -212,8 +212,8 @@ function showClassifyDiv(){
     }
 
     //增加重新提交索引按钮：将重新加载该类目下的item，并且remeasure
-    if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
-        navObj.append("<span id='batchRemeasure' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>重新索引并评价</span>");
+    if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"&&itemMetaCategory!="pending"){
+        navObj.append("<span id='batchRemeasure' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:darkred;font-weight:bold;margin-left:10%;'>重新评价类目下所有条目</span>");
         //注册点击事件
         $("#batchRemeasure").click(function(){//更新当前页面所有item列表的meta设置
             loadStuffItemsByMetaCategory();//将自动翻页完成条目提交 
@@ -269,6 +269,15 @@ function showClassifyDiv(){
     });    
 
 
+    //重新索引当前已加载的条目
+    if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"&&itemMetaCategory!="pending"){
+        navObj.append("<span id='batchRemeasureLoadedItems' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10px;'>重新评价已加载条目</span>");
+        //注册点击事件
+        $("#batchRemeasureLoadedItems").click(function(){
+            batchRemeasureLoadedItems();//将已加载的条目逐条提交索引
+        });
+    }
+
     //注册点击事件
     navObj.find("li").click(function(){
         var key = $(this).attr("data");              
@@ -320,6 +329,14 @@ function showItemCategoryCascader(categoryId){
             targetItemCategory = {category:selectedCategory.id[0],categoryName:selectedCategory.label[selectedCategory.label.length-1]};//仅保存叶子节点
         }
     });
+}
+
+//将当前已经加载的条目重新提交索引
+function batchRemeasureLoadedItems(){
+    items.forEach(function(pendingItem){ //逐条提交索引
+            pendingItem["remeasure"]=true;
+            submitItemForm(pendingItem);
+        });
 }
 
 
@@ -384,7 +401,7 @@ function submitItemForm(item){
         success:function(result){
             totalSubmitItems ++;
             console.log("submit item.[count]",totalSubmitItems);
-            siiimpleToast.message('玩命提交中，'+totalSubmitItems+'/'+items.length,{
+            siiimpleToast.message('玩命提交中，'+totalSubmitItems+'/'+(totalSubmitItems>items.length?totalSubmitItems:items.length),{
                   position: 'bottom|center'
                 });            
         }
