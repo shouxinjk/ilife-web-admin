@@ -217,26 +217,6 @@ function showClassifyDiv(){
         });
     }
 
-
-
-    //增加将当前界面所有商品统一加入classify分类按钮
-    /**
-    if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"){
-        navObj.append("<span id='batchClassify' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10%;'>加入选中类目</span>");
-        //注册点击事件
-        $("#batchClassify").click(function(){//更新当前页面所有item列表的meta设置
-            items.forEach(function(item){
-                if(!item.meta)
-                    item.meta = {};
-                item.meta.category = itemMetaCategory;//注意，不能使用classify，界面在切换过程中会修改
-                item.meta.categoryName = classifyName;
-                submitItemForm(item);
-                changePlatformCategoryMapping(item);
-            });
-        });
-    }
-    //**/
-
     //显示批量调整类目操作
     loadItemCategories();//加载类目下拉
     navObj.append("<span id='btnShowItemCategoryCascade' style='line-height:2rem;font-size:1.2rem;margin-right:0;color:blue;font-weight:bold;margin-left:10px;'>批量修改类目</span>");
@@ -248,6 +228,7 @@ function showClassifyDiv(){
             $("#itemCategoryCascadeDiv").css("display","none")
         }
     });     
+    //修改当前页面所有条目的meta.category
     $("#batchClassify").click(function(){//更新当前页面所有item列表的meta设置
         if(!targetItemCategory || !targetItemCategory.category || !targetItemCategory.categoryName){
             console.log("no category selected.");
@@ -265,7 +246,47 @@ function showClassifyDiv(){
             submitItemForm(item);
             changePlatformCategoryMapping(item);
         });
-    });    
+    });   
+
+    //修改选中条目的meta.category 
+    $("#batchClassifySelected").click(function(){//更新当前页面所有item列表的meta设置
+        //检查目标类目设置
+        if(!targetItemCategory || !targetItemCategory.category || !targetItemCategory.categoryName){
+            console.log("no category selected.");
+            siiimpleToast.message('选择一个类目先~~',{
+              position: 'bottom|center'
+            });     
+            return;        
+        }
+        //检查选中的条目
+        if($('input[name="checkedItem"]:checked').length==0){
+            console.log("no item selected.");
+            siiimpleToast.message('至少要选择一个条目~~',{
+              position: 'bottom|center'
+            });     
+            return;              
+        }
+        console.log("got targetItemCategory.",targetItemCategory);
+        //获取已经勾选的条目
+        $('input[name="checkedItem"]:checked').each(function(){ 
+            console.log("change item.",$(this).val());
+            //从items里面找到对应的条目并提交
+            var item = items.find((node) => node._key===$(this).val());
+            console.log("find item in list.",$(this).val(),item);
+            if(!item){
+                console.log("cannot find item in list.",$(this).val(),item);
+                return;
+            }
+            if(!item.meta)
+                item.meta = {};
+            item.meta.category = targetItemCategory.category;//注意，不能使用classify，界面在切换过程中会修改
+            item.meta.categoryName = targetItemCategory.categoryName;
+            submitItemForm(item);
+            changePlatformCategoryMapping(item);       
+            //取消勾选
+            $(this).prop("checked",false);
+        });         
+    });     
 
     //重新索引当前已加载的条目
     if(itemMetaCategory&&itemMetaCategory.trim().length>0&&itemMetaCategory!="all"&&itemMetaCategory!="pending"){
@@ -275,6 +296,7 @@ function showClassifyDiv(){
             batchRemeasureLoadedItems();//将已加载的条目逐条提交索引
         });
     }
+ 
 
     //注册点击事件
     navObj.find("li").click(function(){
@@ -660,68 +682,6 @@ var esQuery={
     ]
 };
 
-/*
-function loadItems(){//获取内容列表
-    $.ajax({
-        url:"https://data.shouxinjk.net/_db/sea/my/stuff",
-        type:"get",
-        data:{offset:items.length,size:20,category:category},
-        success:function(data){
-            if(data.length==0){//如果没有内容，则显示提示文字
-                showNoMoreMsg();
-            }else{
-                for(var i = 0 ; i < data.length ; i++){
-                    items.push(data[i]);
-                }
-                insertItem();
-            }
-        }
-    })            
-}
-
-//直接从arangodb查询结果：效率太低，废弃。
-function loadItems(){//获取内容列表
-    //query by aql: 选取tagging为空，并且已经有cps链接或qrcode的条目
-    var url = 'https://data.shouxinjk.net/_db/sea/_api/cursor';
-    var q={
-        //query: "For doc in my_stuff filter doc.tagging==null and (doc.link.web2!=null or doc.link.qrcode!=null) sort doc.task.timestamp desc return doc", 
-        query: "For doc in my_stuff filter doc.status.classify=='pending' and doc.status.sync=='ready' sort doc.task.timestamp desc return doc", 
-        count:  true,
-        batchSize: 10//默认显示10条
-    };    
-    if (showAllItems) {//如果显示所有则提示全部内容
-        //q.query = "For doc in my_stuff filter doc.tagging==null sort doc.task.timestamp desc return doc";
-        q.query = "For doc in my_stuff filter doc.status.classify=='pending' sort doc.task.timestamp desc return doc";
-    }     
-    $.ajax({
-        url:url,
-        type:"POST",
-        data:JSON.stringify(q),
-        headers:{
-            "Content-Type":"application/json",
-            "Authorization":"Basic aWxpZmU6aWxpZmU="
-        },
-        success:function(data){
-            //记录游标信息
-            hasMore = data.hasMore;
-            if(data.hasMore){
-                cursorId = data.id;
-            }else{
-                cursorId = null;
-            }
-            //处理数据列表
-            if(data.result.length==0){//如果没有内容，则显示提示文字
-                showNoMoreMsg();
-            }else{
-                for(var i = 0 ; i < data.result.length ; i++){
-                    items.push(data.result[i]);
-                }
-                insertItem();
-            }
-        }
-    })            
-}
-//*/
 
 //直接从搜索引擎获取商品条目
 function loadItems(){//获取内容列表
@@ -776,43 +736,6 @@ function loadItems(){//获取内容列表
     })
 }
 
-
-/**
-//从cursor中获取数据，用于分页显示
-function loadMore(){
-    //query by aql: 选取tagging为空，并且已经有cps链接或qrcode的条目
-    var url = 'https://data.shouxinjk.net/_db/sea/_api/cursor/'+cursorId;
-    var q={};     
-    $.ajax({
-        url:url,
-        type:"PUT",
-        data:JSON.stringify(q),
-        headers:{
-            "Content-Type":"application/json",
-            "Authorization":"Basic aWxpZmU6aWxpZmU="
-        },
-        success:function(data){
-            //记录游标信息
-            hasMore = data.hasMore;
-            if(data.hasMore){
-                cursorId = data.id;
-            }else{
-                cursorId = null;
-            }
-            //处理数据列表            
-            if(data.result.length==0){//如果没有内容，则显示提示文字
-                showNoMoreMsg();
-            }else{
-                for(var i = 0 ; i < data.result.length ; i++){
-                    items.push(data.result[i]);
-                }
-                insertItem();
-            }
-        }
-    })      
-}
-//**/
-
 //将item显示到页面
 function insertItem(){
     // 加载内容
@@ -863,6 +786,8 @@ function insertItem(){
         profitTags = "<div id='profit"+item._key+"' class='itemTags profit-hide'></div>";
     }     
     
+    //显示复选框，便于批量操作
+    var checkbox = "<div style='position:absolute;top:5px;right:15px;width:20px;height:20px;'><input type='checkbox' name='checkedItem' id='checkedItem"+item._key+"' value='"+item._key+"' style='width:20px;height:20px;'></input></div>";
 
 
     var metaCategory = "";
@@ -870,8 +795,14 @@ function insertItem(){
         metaCategory = "<div class='title'>"+item.meta.categoryName+"</div>"
     }
     var title = "<div class='title'>"+item.distributor.name+" "+item.title+"</div>"
-    $("#waterfall").append("<li><div data='"+item._key+"'>" + image + metaCategory +title+profitTags +highlights+ "</div></li>");
+    $("#waterfall").append("<li><div data='"+item._key+"'>" + image + metaCategory +title+profitTags +highlights+checkbox+ "</div></li>");
     num++;
+
+    //注册事件：点击复选框后要停止跳转事件 
+    $("#checkedItem"+item._key).click(function(){
+        event.stopPropagation();
+        //其他不用操作，等着勾选后再开始
+    });
 
     //注册事件
     $("div[data='"+item._key+"']").click(function(){
