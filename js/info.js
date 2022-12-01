@@ -1369,7 +1369,11 @@ function uploadPngFile(dataurl, filename, mediaKey){
                 if(!stuff.media)
                     stuff.media = {};
                 stuff.media[mediaKey] = app.config.poster_api+"/"+data.url;
-                submitItemForm();//提交修改
+                //submitItemForm();//提交修改
+                //提交保存：有延后，避免频繁提交
+                commitData(stuff, false,function(){
+                    console.log("media image committed.");
+                });                
                 //更新图片地址，便于推送到微信群
                 $("#"+mediaKey+"Img img").attr("src",app.config.poster_api+"/"+data.url);
             }
@@ -1516,7 +1520,11 @@ function requestAdvice(scheme,xBroker,xItem,xUser){
     if(!stuff.advice)
         stuff.advice={};
     stuff.advice[scheme.id] = xAdvice;
-    submitItemForm();//提交修改: 
+    //submitItemForm();//提交修改: 
+    //提交保存：有延后，避免频繁提交
+    commitData(stuff, false,function(){
+        console.log("advice committed.");
+    });     
 }
 
 //生成图文内容：请求模板列表
@@ -1613,7 +1621,11 @@ function publishArticle(){
                 if(!stuff.article)
                     stuff.article={};
                 stuff.article[templateId]=res.id;
-                submitItemForm();//提交修改
+                //submitItemForm();//提交修改
+                //提交保存：有延后，避免频繁提交
+                commitData(stuff, false,function(){
+                    console.log("article committed.");
+                }); 
 
                 //提交文章到 索引
                 var doc = createArticleDoc(res.id);
@@ -1652,7 +1664,11 @@ function publishArticle(){
                 if(!stuff.article)
                     stuff.article={};
                 stuff.article[templateId]=res.id;
-                submitItemForm();//提交修改
+                //submitItemForm();//提交修改
+                //提交保存：有延后，避免频繁提交
+                commitData(stuff, false,function(){
+                    console.log("article committed.");
+                });                 
 
                 //提交文章到 索引
                 var doc = createArticleDoc(res.id);
@@ -1876,7 +1892,11 @@ function requestPoster(scheme,xBroker,xItem,xUser){
                     stuff.poster = {};
                 stuff.poster[scheme.id] = res.url;//以schemeId作为键值存储poster
                 //sendItemMaterialToWebhook("海报",res.url,res.url);//发送海报到企业微信群：确定后手动选择发送，不自动发送，减少信息量
-                submitItemForm();//提交修改
+                //submitItemForm();//提交修改
+                //提交保存：有延后，避免频繁提交
+                commitData(stuff, false,function(){
+                    console.log("poster image committed.");
+                });                 
                 //显示到界面
                 var showPoster = true;
                 if(showPoster){
@@ -2159,7 +2179,11 @@ function getLocationByAddress(address){
 
 //提交索引
 function index(item){
-    submitItemForm(item,true);
+    //submitItemForm(item,true);
+    //提交保存：有延后，避免频繁提交
+    commitData(item,true, function(){
+        console.log("index committed. now jump..."); 
+    });    
 }
 /**
 function index(item){//记录日志
@@ -2943,7 +2967,7 @@ function savePropValue(fullProperty, nValue, pName){
     }
 
     //提交保存：有延后，避免频繁提交
-    commitData(stuff, function(){
+    commitData(stuff, false,function(){
         siiimpleToast.message('数据已保存',{
           position: 'bottom|center'
         }); 
@@ -2956,8 +2980,8 @@ function savePropValue(fullProperty, nValue, pName){
 //commitTimer
 var _sxTimer = null;
 var _sxDataReceived = null;//milliseconds while receiving data
-var _sxDuration = 30000;//milliseconds from data received to commit
-function commitData(data,callback){
+var _sxDuration = 3000;//milliseconds from data received to commit
+function commitData(data, isJump = false, callback){
     //set initially received time 
     if(!_sxDataReceived){
         _sxDataReceived = new Date().getTime();
@@ -2972,7 +2996,7 @@ function commitData(data,callback){
     _sxTimer = setTimeout(function(){
         console.log("commit data timer start.",data);
         //发起数据提交
-        submitItemForm(data,false);
+        submitItemForm(data,isJump);
         if(callback && typeof callback === "function"){
             callback();
         }        
