@@ -2032,6 +2032,11 @@ function sendItemMaterialToWeibo(){
 }
 
 //将url图片转换为base64编码
+//当前取消：该功能
+function base64Img(url) {
+    //donothing
+}
+/**
 function base64Img(url) {
    var canvas = document.createElement('canvas');
    var ctx = canvas.getContext('2d');   
@@ -2055,6 +2060,7 @@ function base64Img(url) {
     };
     img.src = url;
 }
+//**/
 
 //发送文字信息到企业微信：用于发送推荐语等
 //由运营人员选择后选择发送
