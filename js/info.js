@@ -2968,9 +2968,12 @@ function savePropValue(fullProperty, nValue, pName){
 
     //提交保存：有延后，避免频繁提交
     commitData(stuff, false,function(){
+        console.log("data saved.");
+        /**
         siiimpleToast.message('数据已保存',{
           position: 'bottom|center'
         }); 
+        //**/
     });
     console.log("stuff propvalue updated.",stuff);
 }
