@@ -322,7 +322,7 @@ function showContent(item){
         var tagging = $("#tagging").val()?$("#tagging").val():"";
         var web2link = $("#web2link").val()?$("#web2link").val():"";
         var wap2link = $("#wap2link").val()?$("#wap2link").val():"";
-        if(stuff.meta && stuff.meta.category && tagging.trim().length>0 && ((web2link.trim().length>0 && wap2link.trim().length>0) || item.link.qrcode)) {
+        if(stuff.meta && stuff.meta.category /*&& tagging.trim().length>0*/ && ((web2link.trim().length>0 && wap2link.trim().length>0) || item.link.qrcode)) {
             stuff.logo = logo;
             stuff.tagging = tagging;
             stuff.link.web2 = web2link;
@@ -335,7 +335,7 @@ function showContent(item){
             console.log("now start commit index.",stuff);
             index(stuff);
         }else{
-            siiimpleToast.message('类目、推荐语和推广链接不能为空',{
+            siiimpleToast.message('类目、推广链接不能为空',{
               position: 'bottom|center'
             });            
         }
