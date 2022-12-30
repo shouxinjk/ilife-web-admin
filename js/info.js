@@ -2644,7 +2644,7 @@ function loadProps(categoryId){
             <div style="display:flex;flex-direction:row;flex-wrap:nowrap;width:100%;margin:1px auto;">
                 <div style="width:20%;line-height:30px;text-align:right;">__propName__propType</div>
                 <div style="width:80%;vertical-align:middle;">
-                    <input type="__type" value="__orgValue" id="__inputId" data-property="__property" data-targetproperty="__targetProperty" data-propname="__propName" data-ovalue="__orgValue" data-labeltype="__labelType" data-referdict="__referDict" data-refercategory="__referCategory" data-measureid="__measureId" style="width:100%;line-height:18px;margin:2px 5px;padding:2px;"/>
+                    <input type="__type" value="__orgValue" id="__inputId" data-property="__property" data-targetproperty="__targetProperty" data-propname="__propName" data-ovalue="__orgValue" data-labeltype="__labelType" data-referdict="__referDict" data-refercategory="__referCategory" data-measureid="__measureId" placeholder="__placeholder" style="width:100%;line-height:18px;margin:2px 5px;padding:2px;"/>
                 </div>
             </div>
             `;                
@@ -2719,6 +2719,13 @@ function loadProps(categoryId){
                 propHtml = propHtml.replace(/__propType/g,item.type=="self"?"๏":"○");
                 propHtml = propHtml.replace(/__propName/g,name);
                 propHtml = propHtml.replace(/__orgValue/g,value);
+                if(item.tags&&item.tags.trim().length>0){ //优先显示数据提示
+                    propHtml = propHtml.replace(/__placeholder/g,item.tags);
+                }else if(item.description&&item.description.trim().length>0){ //其次显示属性描述
+                    propHtml = propHtml.replace(/__placeholder/g,item.description);
+                }else{
+                    propHtml = propHtml.replace(/__placeholder/g,"还没有数据，等你补充哦~~");
+                }                
                 propHtml = propHtml.replace(/__property/g,property);
                 propHtml = propHtml.replace(/__targetProperty/g,targetPropKey);
                 propHtml = propHtml.replace(/__inputId/g,inputId);
